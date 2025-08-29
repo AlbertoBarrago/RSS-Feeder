@@ -24,4 +24,4 @@ This is a simple RSS reader application for iOS.
     Click the "Run" button (the play icon) in the Xcode toolbar, or press `Cmd+R`. Xcode will build the app and launch it on the selected simulator or device.
 
 ## Preview 
-!(screen.png)[preview]
+![App Preview](screen.png)
