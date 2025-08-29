@@ -35,6 +35,7 @@ struct ContentView: View {
                     Image(systemName: "list.bullet")
                 }
                 .buttonStyle(BorderlessButtonStyle())
+                .help("Manage Feeds")
                 
                 // Add feed button
                 Button(action: {
@@ -43,6 +44,7 @@ struct ContentView: View {
                     Image(systemName: "plus")
                 }
                 .buttonStyle(BorderlessButtonStyle())
+                .help("Add Feed")
                 
                 // Refresh button
                 Button(action: {
@@ -51,6 +53,16 @@ struct ContentView: View {
                     Image(systemName: "arrow.clockwise")
                 }
                 .buttonStyle(BorderlessButtonStyle())
+                .help("Refresh Feeds")
+                
+                // Close button
+                Button(action: {
+                    NSApplication.shared.terminate(nil)
+                }) {
+                    Image(systemName: "xmark")
+                }
+                .buttonStyle(BorderlessButtonStyle())
+                .help("Close Application")
             }
             .padding()
             .background(Color(.controlBackgroundColor))
@@ -360,7 +372,6 @@ struct ManageFeedsView: View {
 }
 
 // MARK: - RSS Feed Parser
-import SwiftData
 class RSSParser: NSObject, ObservableObject, XMLParserDelegate {
     @Published var isLoading = false
     
@@ -431,10 +442,13 @@ class RSSParser: NSObject, ObservableObject, XMLParserDelegate {
         if elementName == "item",
            let feedSource = currentFeedSource {
             
+            let cleanedDate = currentPubDate.replacingOccurrences(of: "0000", with: "").trimmingCharacters(in: .whitespacesAndNewlines)
+
+            
             let newItem = RSSFeedItem(
                 title: currentTitle,
                 link: currentLink,
-                pubDate: currentPubDate,
+                pubDate: cleanedDate,
                 feedSourceName: feedSource.name,
                 feedSourceURL: feedSource.url
             )
