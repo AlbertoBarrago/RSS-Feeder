@@ -148,6 +148,8 @@ struct ContentView: View {
     }
     
     private func refreshAllFeeds() {
+        removeDuplicateFeedItems()
+        limitFeedItems()
         for feedSource in feedSources {
             parser.fetchFeed(from: feedSource, in: modelContext)
         }
@@ -158,6 +160,55 @@ struct ContentView: View {
             for index in offsets {
                 modelContext.delete(feedItems[index])
             }
+        }
+    }
+
+    private func removeDuplicateFeedItems() {
+        let fetchDescriptor = FetchDescriptor<RSSFeedItem>()
+        do {
+            let allItems = try modelContext.fetch(fetchDescriptor)
+            let groupedByLink = Dictionary(grouping: allItems, by: { $0.link })
+            
+            for (_, items) in groupedByLink {
+                if items.count > 1 {
+                    let sortedItems = items.sorted { $0.pubDate > $1.pubDate }
+                    for (index, item) in sortedItems.enumerated() {
+                        if index > 0 {
+                            modelContext.delete(item)
+                        }
+                    }
+                }
+            }
+            
+            try? modelContext.save()
+        } catch {
+            print("Error removing duplicate items: \(error)")
+        }
+    }
+
+    private func limitFeedItems() {
+        let fetchDescriptor = FetchDescriptor<RSSFeedSource>()
+        do {
+            let allFeedSources = try modelContext.fetch(fetchDescriptor)
+            for feedSource in allFeedSources {
+                let url = feedSource.url
+                let fetchDescriptor = FetchDescriptor<RSSFeedItem>(
+                    predicate: #Predicate { $0.feedSourceURL == url },
+                    sortBy: [SortDescriptor(\.pubDate, order: .reverse)]
+                )
+                let items = try modelContext.fetch(fetchDescriptor)
+                if items.count > 50 {
+                    for (index, item) in items.enumerated() {
+                        if index >= 50 {
+                            modelContext.delete(item)
+                        }
+                    }
+                }
+            }
+            
+            try? modelContext.save()
+        } catch {
+            print("Error limiting feed items: \(error)")
         }
     }
 }
@@ -309,6 +360,7 @@ struct ManageFeedsView: View {
 }
 
 // MARK: - RSS Feed Parser
+import SwiftData
 class RSSParser: NSObject, ObservableObject, XMLParserDelegate {
     @Published var isLoading = false
     
@@ -319,6 +371,7 @@ class RSSParser: NSObject, ObservableObject, XMLParserDelegate {
     private var currentTitle = ""
     private var currentLink = ""
     private var currentPubDate = ""
+    private var parsedItems: [RSSFeedItem] = []
 
     func fetchFeed(from feedSource: RSSFeedSource, in context: ModelContext) {
         guard let url = URL(string: feedSource.url) else {
@@ -328,6 +381,7 @@ class RSSParser: NSObject, ObservableObject, XMLParserDelegate {
         
         self.modelContext = context
         self.currentFeedSource = feedSource
+        self.parsedItems = [] // Clear parsed items for new feed
         isLoading = true
         
         DispatchQueue.global(qos: .userInitiated).async {
@@ -375,8 +429,7 @@ class RSSParser: NSObject, ObservableObject, XMLParserDelegate {
 
     func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
         if elementName == "item",
-           let feedSource = currentFeedSource,
-           let context = modelContext {
+           let feedSource = currentFeedSource {
             
             let newItem = RSSFeedItem(
                 title: currentTitle,
@@ -385,10 +438,31 @@ class RSSParser: NSObject, ObservableObject, XMLParserDelegate {
                 feedSourceName: feedSource.name,
                 feedSourceURL: feedSource.url
             )
-            
-            DispatchQueue.main.async {
-                context.insert(newItem)
+            parsedItems.append(newItem)
+        }
+    }
+
+    func parserDidEndDocument(_ parser: XMLParser) {
+        guard let context = modelContext else { return }
+        
+        DispatchQueue.main.async {
+            do {
+                let allLinks = self.parsedItems.map { $0.link }
+                let fetchDescriptor = FetchDescriptor<RSSFeedItem>(
+                    predicate: #Predicate { allLinks.contains($0.link) }
+                )
+                let existingItems = try context.fetch(fetchDescriptor)
+                let existingLinks = Set(existingItems.map { $0.link })
+                
+                let newItems = self.parsedItems.filter { !existingLinks.contains($0.link) }
+                
+                for item in newItems {
+                    context.insert(item)
+                }
+                
                 try? context.save()
+            } catch {
+                print("Error fetching or saving items: \(error)")
             }
         }
     }
