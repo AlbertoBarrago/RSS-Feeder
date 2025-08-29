@@ -2,7 +2,7 @@
 //  RSSReaderApp.swift
 //  RSSReader
 //
-//  Created by Alberto on 2025.
+//  Created by Alberto Barrago on 2025.
 //
 
 import SwiftUI
@@ -86,7 +86,6 @@ class MenubarController: NSObject, ObservableObject {
             if self.popover.isShown {
                 self.popover.performClose(sender)
             } else {
-                // Simple fix: Add margin to avoid menu bar overlap
                 let adjustedBounds = NSRect(
                     x: button.bounds.minX,
                     y: button.bounds.minY - 5,

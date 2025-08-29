@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  RSSReader
 //
-//  Created by Alberto on 2025.
+//  Created by Alberto Barrago on 2025.
 //
 
 import SwiftUI

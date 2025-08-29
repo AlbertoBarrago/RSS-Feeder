@@ -2,7 +2,7 @@
 //  Item.swift
 //  RSSReader
 //
-//  Created by Alberto Barrago on 28/08/25.
+//  Created by Alberto Barrago on 2025.
 //
 
 import Foundation
