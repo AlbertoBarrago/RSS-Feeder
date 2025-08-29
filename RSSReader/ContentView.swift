@@ -55,6 +55,15 @@ struct ContentView: View {
                 .buttonStyle(BorderlessButtonStyle())
                 .help("Refresh Feeds")
                 
+                // Clean Old Data button
+                Button(action: {
+                    clearAllFeedItems()
+                }) {
+                    Image(systemName: "trash")
+                }
+                .buttonStyle(BorderlessButtonStyle())
+                .help("Clean All Feed Items")
+                
                 // Close button
                 Button(action: {
                     NSApplication.shared.terminate(nil)
@@ -70,57 +79,60 @@ struct ContentView: View {
             Divider()
             
             // Content
-            if parser.isLoading {
-                ProgressView("Loading feeds...")
-                    .padding()
-            } else if !feedItems.isEmpty {
-                List {
-                    ForEach(feedItems, id: \.id) { item in
-                        Button(action: {
-                            if let url = URL(string: item.link) {
-                                NSWorkspace.shared.open(url)
-                            }
-                        }) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(item.title)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                    .multilineTextAlignment(.leading)
-                                HStack {
-                                    Text(item.feedSourceName)
-                                        .font(.caption)
-                                        .foregroundColor(.blue)
-                                    Spacer()
-                                    Text(item.pubDate)
-                                        .font(.caption)
-                                        .foregroundColor(.gray)
+            VStack {
+                if parser.isLoading {
+                    ProgressView("Loading feeds...")
+                        .padding()
+                } else if !feedItems.isEmpty {
+                    List {
+                        ForEach(feedItems, id: \.id) { item in
+                            Button(action: {
+                                if let url = URL(string: item.link) {
+                                    NSWorkspace.shared.open(url)
                                 }
+                            }) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(item.title)
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                        .multilineTextAlignment(.leading)
+                                    HStack {
+                                        Text(item.feedSourceName)
+                                            .font(.caption)
+                                            .foregroundColor(.blue)
+                                        Spacer()
+                                        Text(item.pubDate)
+                                            .font(.caption)
+                                            .foregroundColor(.gray)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             }
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .buttonStyle(PlainButtonStyle())
+                            .padding(.vertical, 8)
                         }
-                        .buttonStyle(PlainButtonStyle())
-                        .padding(.vertical, 8)
+                        .onDelete(perform: deleteItems)
                     }
-                    .onDelete(perform: deleteItems)
-                }
-            } else if feedSources.isEmpty {
-                VStack(spacing: 16) {
-                    Text("No RSS feeds added yet")
+                } else if feedSources.isEmpty {
+                    VStack(spacing: 16) {
+                        Text("No RSS feeds added yet")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        Button("Add Your First Feed") {
+                            showingAddFeed = true
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                    .padding()
+                } else {
+                    Text("No feed items to display.\nTry refreshing your feeds.")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-                    
-                    Button("Add Your First Feed") {
-                        showingAddFeed = true
-                    }
-                    .buttonStyle(.borderedProminent)
+                        .multilineTextAlignment(.center)
+                        .padding()
                 }
-                .padding()
-            } else {
-                Text("No feed items to display.\nTry refreshing your feeds.")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding()
+                Spacer()
             }
         }
         .frame(minWidth: 400, minHeight: 500)
@@ -143,8 +155,8 @@ struct ContentView: View {
     
     private func addDefaultFeed() {
         let defaultFeed = RSSFeedSource(
-            name: "Apple Newsroom",
-            url: "https://www.apple.com/newsroom/rss-feed.rss"
+            name: "Wired",
+            url: "https://wired.com/feed/rss"
         )
         modelContext.insert(defaultFeed)
         try? modelContext.save()
@@ -221,6 +233,15 @@ struct ContentView: View {
             try? modelContext.save()
         } catch {
             print("Error limiting feed items: \(error)")
+        }
+    }
+    
+    private func clearAllFeedItems() {
+        do {
+            try modelContext.delete(model: RSSFeedItem.self)
+            try modelContext.save()
+        } catch {
+            print("Error clearing all feed items: \(error)")
         }
     }
 }
@@ -442,7 +463,7 @@ class RSSParser: NSObject, ObservableObject, XMLParserDelegate {
         if elementName == "item",
            let feedSource = currentFeedSource {
             
-            let cleanedDate = currentPubDate.replacingOccurrences(of: "0000", with: "").trimmingCharacters(in: .whitespacesAndNewlines)
+            let cleanedDate = currentPubDate.replacingOccurrences(of: "+0000", with: "").trimmingCharacters(in: .whitespacesAndNewlines)
 
             
             let newItem = RSSFeedItem(
