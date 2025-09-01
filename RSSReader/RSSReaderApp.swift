@@ -62,23 +62,60 @@ class MenubarController: NSObject, ObservableObject {
         }
         
         super.init()
-        
+
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
 
         if let button = self.statusItem.button {
             button.image = NSImage(systemSymbolName: "antenna.radiowaves.left.and.right", accessibilityDescription: "RSS Reader")
-            button.action = #selector(togglePopover(_:))
+            button.action = nil
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
             button.target = self
         }
         
         self.popover = NSPopover()
         self.popover.behavior = .transient
         self.popover.contentSize = NSSize(width: 400, height: 500)
+        self.popover.contentViewController = NSHostingController(rootView: ContentView().environment(\.modelContext, modelContext))
+
+        let menu = NSMenu()
         
-        let contentView = ContentView()
-            .environment(\.modelContext, modelContext)
+        let showHideItem = NSMenuItem(title: "Show/Hide Reader", action: #selector(togglePopover), keyEquivalent: "")
+        showHideItem.target = self
+        menu.addItem(showHideItem)
         
-        self.popover.contentViewController = NSHostingController(rootView: contentView)
+        menu.addItem(NSMenuItem.separator())
+        
+        let aboutItem = NSMenuItem(title: "About RSS Reader", action: #selector(showAboutPanel), keyEquivalent: "")
+        aboutItem.target = self
+        menu.addItem(aboutItem)
+        
+        let quitItem = NSMenuItem(title: "Quit RSS Reader", action: #selector(NSApplication.shared.terminate(_:)), keyEquivalent: "q")
+        menu.addItem(quitItem)
+        
+        self.statusItem.menu = menu
+    }
+    
+    // Presents the About panel with your custom info.
+    @objc func showAboutPanel() {
+        let creditsString = """
+        Developed by: Alberto Barrago 👨‍💻
+        Role: Fullstack, Devops & AI Researcher
+        """
+        
+        let credits = NSAttributedString(
+            string: creditsString,
+            attributes: [
+                .font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize),
+                .foregroundColor: NSColor.labelColor
+            ]
+        )
+        
+        NSApplication.shared.orderFrontStandardAboutPanel(
+            options: [
+                .applicationName: "RSS Reader",
+                .credits: credits,
+            ]
+        )
     }
 
     @objc func togglePopover(_ sender: AnyObject?) {
