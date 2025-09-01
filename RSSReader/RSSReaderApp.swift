@@ -25,13 +25,9 @@ struct RSSReaderApp: App {
     }
 
     var body: some Scene {
-        WindowGroup {
-            ContentView()
-                .frame(minWidth: 400, minHeight: 600)
-                .background(Color(.windowBackgroundColor))
-        }
-        .windowStyle(.hiddenTitleBar)
-        .modelContainer(modelContainer)
+        Settings {
+            EmptyView()
+         }
     }
 }
 
@@ -78,6 +74,9 @@ class MenubarController: NSObject, ObservableObject {
         self.popover.behavior = .transient
         self.popover.contentSize = NSSize(width: 400, height: 500)
         self.popover.contentViewController = NSHostingController(rootView: ContentView().environment(\.modelContext, modelContext))
+        
+        // Hide dock icon - this is perfect here!
+        NSApp.setActivationPolicy(.accessory)
     }
     
     @objc private func handleButtonClick() {
@@ -102,10 +101,26 @@ class MenubarController: NSObject, ObservableObject {
         aboutItem.target = self
         menu.addItem(aboutItem)
         
+        let isDockHidden = NSApp.activationPolicy() == .accessory
+        let toggleTitle = isDockHidden ? "Show in Dock" : "Hide from Dock"
+        let toggleItem = NSMenuItem(title: toggleTitle, action: #selector(toggleDockVisibility), keyEquivalent: "h")
+        toggleItem.target = self
+        menu.addItem(toggleItem)
+        
         let quitItem = NSMenuItem(title: "Quit RSS Reader", action: #selector(NSApplication.shared.terminate(_:)), keyEquivalent: "q")
         menu.addItem(quitItem)
         
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: button.bounds.height), in: button)
+    }
+    
+    @objc private func toggleDockVisibility() {
+        if NSApp.activationPolicy() == .accessory {
+            // Show in dock
+            NSApp.setActivationPolicy(.regular)
+        } else {
+            // Hide from dock
+            NSApp.setActivationPolicy(.accessory)
+        }
     }
     
     @objc func showAboutPanel() {

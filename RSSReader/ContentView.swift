@@ -167,7 +167,6 @@ struct ContentView: View {
         modelContext.insert(newFeed)
         try? modelContext.save()
         
-        // Immediately fetch from the new feed
         parser.fetchFeed(from: newFeed, in: modelContext)
     }
     
