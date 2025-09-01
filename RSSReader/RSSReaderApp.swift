@@ -44,7 +44,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
-// MARK: - Menubar Controller
+/// MARK: - Menubar Controller
 @MainActor
 class MenubarController: NSObject, ObservableObject {
     private var statusItem: NSStatusItem!
@@ -67,23 +67,36 @@ class MenubarController: NSObject, ObservableObject {
 
         if let button = self.statusItem.button {
             button.image = NSImage(systemSymbolName: "antenna.radiowaves.left.and.right", accessibilityDescription: "RSS Reader")
-            button.action = nil
-            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+            
+            button.action = #selector(handleButtonClick)
             button.target = self
+            
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
         
         self.popover = NSPopover()
         self.popover.behavior = .transient
         self.popover.contentSize = NSSize(width: 400, height: 500)
         self.popover.contentViewController = NSHostingController(rootView: ContentView().environment(\.modelContext, modelContext))
+    }
+    
+    @objc private func handleButtonClick() {
+        if let event = NSApp.currentEvent {
+            if event.type == .rightMouseUp {
+                // Right-click: Show the menu
+                showRightClickMenu()
+            } else if event.type == .leftMouseUp {
+                // Left-click: Toggle the popover
+                togglePopover(self)
+            }
+        }
+    }
 
+    
+    private func showRightClickMenu() {
+        guard let button = self.statusItem.button else { return }
+        
         let menu = NSMenu()
-        
-        let showHideItem = NSMenuItem(title: "Show/Hide Reader", action: #selector(togglePopover), keyEquivalent: "")
-        showHideItem.target = self
-        menu.addItem(showHideItem)
-        
-        menu.addItem(NSMenuItem.separator())
         
         let aboutItem = NSMenuItem(title: "About RSS Reader", action: #selector(showAboutPanel), keyEquivalent: "")
         aboutItem.target = self
@@ -92,14 +105,13 @@ class MenubarController: NSObject, ObservableObject {
         let quitItem = NSMenuItem(title: "Quit RSS Reader", action: #selector(NSApplication.shared.terminate(_:)), keyEquivalent: "q")
         menu.addItem(quitItem)
         
-        self.statusItem.menu = menu
+        menu.popUp(positioning: nil, at: NSPoint(x: 0, y: button.bounds.height), in: button)
     }
     
-    // Presents the About panel with your custom info.
     @objc func showAboutPanel() {
         let creditsString = """
-        Developed by: Alberto Barrago 👨‍💻
-        Role: Fullstack, Devops & AI Researcher
+        Developed by: Alberto Barrago
+        © 2025 RSS Reader
         """
         
         let credits = NSAttributedString(
