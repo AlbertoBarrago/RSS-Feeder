@@ -1,0 +1,108 @@
+{
+  "" : {
+    "diagnostics" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSReader-master.dia",
+    "emit-module-dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSReader-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSReader-master-emit-module.dia",
+    "swift-dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSReader-master.swiftdeps"
+  },
+  "/Users/albz/RSSReader/RSSReader/Extensions/Data+Extensions.swift" : {
+    "const-values" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/Data+Extensions.swiftconstvalues",
+    "dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/Data+Extensions.d",
+    "diagnostics" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/Data+Extensions.dia",
+    "index-unit-output-path" : "/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/Data+Extensions.o",
+    "llvm-bc" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/Data+Extensions.bc",
+    "object" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/Data+Extensions.o",
+    "swift-dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/Data+Extensions.swiftdeps",
+    "swiftmodule" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/Data+Extensions~partial.swiftmodule"
+  },
+  "/Users/albz/RSSReader/RSSReader/Models/RSSmodel.swift" : {
+    "const-values" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSmodel.swiftconstvalues",
+    "dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSmodel.d",
+    "diagnostics" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSmodel.dia",
+    "index-unit-output-path" : "/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSmodel.o",
+    "llvm-bc" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSmodel.bc",
+    "object" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSmodel.o",
+    "swift-dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSmodel.swiftdeps",
+    "swiftmodule" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSmodel~partial.swiftmodule"
+  },
+  "/Users/albz/RSSReader/RSSReader/RSSReaderApp.swift" : {
+    "const-values" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSReaderApp.swiftconstvalues",
+    "dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSReaderApp.d",
+    "diagnostics" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSReaderApp.dia",
+    "index-unit-output-path" : "/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSReaderApp.o",
+    "llvm-bc" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSReaderApp.bc",
+    "object" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSReaderApp.o",
+    "swift-dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSReaderApp.swiftdeps",
+    "swiftmodule" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSReaderApp~partial.swiftmodule"
+  },
+  "/Users/albz/RSSReader/RSSReader/Services/RSSParser.swift" : {
+    "const-values" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSParser.swiftconstvalues",
+    "dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSParser.d",
+    "diagnostics" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSParser.dia",
+    "index-unit-output-path" : "/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSParser.o",
+    "llvm-bc" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSParser.bc",
+    "object" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSParser.o",
+    "swift-dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSParser.swiftdeps",
+    "swiftmodule" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/RSSParser~partial.swiftmodule"
+  },
+  "/Users/albz/RSSReader/RSSReader/Views/AddFeedView.swift" : {
+    "const-values" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/AddFeedView.swiftconstvalues",
+    "dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/AddFeedView.d",
+    "diagnostics" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/AddFeedView.dia",
+    "index-unit-output-path" : "/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/AddFeedView.o",
+    "llvm-bc" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/AddFeedView.bc",
+    "object" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/AddFeedView.o",
+    "swift-dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/AddFeedView.swiftdeps",
+    "swiftmodule" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/AddFeedView~partial.swiftmodule"
+  },
+  "/Users/albz/RSSReader/RSSReader/Views/ArticleRow.swift" : {
+    "const-values" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ArticleRow.swiftconstvalues",
+    "dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ArticleRow.d",
+    "diagnostics" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ArticleRow.dia",
+    "index-unit-output-path" : "/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ArticleRow.o",
+    "llvm-bc" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ArticleRow.bc",
+    "object" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ArticleRow.o",
+    "swift-dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ArticleRow.swiftdeps",
+    "swiftmodule" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ArticleRow~partial.swiftmodule"
+  },
+  "/Users/albz/RSSReader/RSSReader/Views/ContentView.swift" : {
+    "const-values" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ContentView.d",
+    "diagnostics" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ContentView.dia",
+    "index-unit-output-path" : "/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ContentView.o",
+    "swift-dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ContentView.swiftdeps",
+    "swiftmodule" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ContentView~partial.swiftmodule"
+  },
+  "/Users/albz/RSSReader/RSSReader/Views/EmptyStateView.swift" : {
+    "const-values" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/EmptyStateView.swiftconstvalues",
+    "dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/EmptyStateView.d",
+    "diagnostics" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/EmptyStateView.dia",
+    "index-unit-output-path" : "/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/EmptyStateView.o",
+    "llvm-bc" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/EmptyStateView.bc",
+    "object" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/EmptyStateView.o",
+    "swift-dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/EmptyStateView.swiftdeps",
+    "swiftmodule" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/EmptyStateView~partial.swiftmodule"
+  },
+  "/Users/albz/RSSReader/RSSReader/Views/ManageFeedsView.swift" : {
+    "const-values" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ManageFeedsView.swiftconstvalues",
+    "dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ManageFeedsView.d",
+    "diagnostics" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ManageFeedsView.dia",
+    "index-unit-output-path" : "/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ManageFeedsView.o",
+    "llvm-bc" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ManageFeedsView.bc",
+    "object" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ManageFeedsView.o",
+    "swift-dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ManageFeedsView.swiftdeps",
+    "swiftmodule" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/ManageFeedsView~partial.swiftmodule"
+  },
+  "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/albz/RSSReader/build/Build/Intermediates.noindex/RSSReader.build/Debug/RSSReader.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
+  }
+}

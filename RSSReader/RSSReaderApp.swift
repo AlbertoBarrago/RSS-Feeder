@@ -13,7 +13,7 @@ import SwiftData
 @main
 struct RSSReaderApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    
+
     let modelContainer: ModelContainer
 
     init() {
@@ -45,7 +45,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 class MenubarController: NSObject, ObservableObject {
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
-    
+
     private var modelContainer: ModelContainer
     private var modelContext: ModelContext
 
@@ -56,28 +56,28 @@ class MenubarController: NSObject, ObservableObject {
         } catch {
             fatalError("Failed to create MenubarController ModelContainer: \(error)")
         }
-        
+
         super.init()
 
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
 
         if let button = self.statusItem.button {
             button.image = NSImage(systemSymbolName: "antenna.radiowaves.left.and.right", accessibilityDescription: "RSS Reader")
-            
+
             button.action = #selector(handleButtonClick)
             button.target = self
-            
+
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
-        
+
         self.popover = NSPopover()
         self.popover.behavior = .transient
         self.popover.contentSize = NSSize(width: 800, height: 600)
         self.popover.contentViewController = NSHostingController(rootView: ContentView().environment(\.modelContext, modelContext))
-        
+
         NSApp.setActivationPolicy(.accessory)
     }
-    
+
     @objc private func handleButtonClick() {
         if let event = NSApp.currentEvent {
             if event.type == .rightMouseUp {
@@ -90,28 +90,28 @@ class MenubarController: NSObject, ObservableObject {
         }
     }
 
-    
+
     private func showRightClickMenu() {
         guard let button = self.statusItem.button else { return }
-        
+
         let menu = NSMenu()
-        
+
         let aboutItem = NSMenuItem(title: "About RSS Reader", action: #selector(showAboutPanel), keyEquivalent: "")
         aboutItem.target = self
         menu.addItem(aboutItem)
-        
+
         let isDockHidden = NSApp.activationPolicy() == .accessory
         let toggleTitle = isDockHidden ? "Show in Dock" : "Hide from Dock"
         let toggleItem = NSMenuItem(title: toggleTitle, action: #selector(toggleDockVisibility), keyEquivalent: "h")
         toggleItem.target = self
         menu.addItem(toggleItem)
-        
+
         let quitItem = NSMenuItem(title: "Quit RSS Reader", action: #selector(NSApplication.shared.terminate(_:)), keyEquivalent: "q")
         menu.addItem(quitItem)
-        
+
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: button.bounds.height), in: button)
     }
-    
+
     @objc private func toggleDockVisibility() {
         if NSApp.activationPolicy() == .accessory {
             NSApp.setActivationPolicy(.regular)
@@ -119,13 +119,13 @@ class MenubarController: NSObject, ObservableObject {
             NSApp.setActivationPolicy(.accessory)
         }
     }
-    
+
     @objc func showAboutPanel() {
         let creditsString = """
         Developed by: Alberto Barrago
         © 2025 RSS Reader
         """
-        
+
         let credits = NSAttributedString(
             string: creditsString,
             attributes: [
@@ -133,7 +133,7 @@ class MenubarController: NSObject, ObservableObject {
                 .foregroundColor: NSColor.labelColor
             ]
         )
-        
+
         NSApplication.shared.orderFrontStandardAboutPanel(
             options: [
                 .applicationName: "RSS Reader",

@@ -1,0 +1,64 @@
+{
+  "source": "/Users/albz/RSSReader/RSSReader/Views/AddFeedView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Add RSS Feed",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 20
+        }
+      },
+      {
+        "comment": "",
+        "key": "Feed Name",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 25
+        }
+      },
+      {
+        "comment": "",
+        "key": "e.g., Tech News",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 27
+        }
+      },
+      {
+        "comment": "",
+        "key": "Feed URL",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 32
+        }
+      },
+      {
+        "comment": "",
+        "key": "https://example.com/rss",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 34
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 50
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add Feed",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 57
+        }
+      }
+    ]
+  },
+  "version": 1
+}
