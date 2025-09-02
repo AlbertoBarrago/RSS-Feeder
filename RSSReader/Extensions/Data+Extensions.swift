@@ -13,20 +13,20 @@ extension String {
               let host = url.host else {
             return self
         }
-        
+
         let components = host.components(separatedBy: ".")
         if components.count > 2 && components[0] == "www" {
             return components.dropFirst().joined(separator: ".")
         }
         return host
     }
-    
+
     func extractDomainName() -> String {
         guard let url = URL(string: self),
               let host = url.host else {
             return "RSS Feed"
         }
-        
+
         let components = host.components(separatedBy: ".")
         if components.count > 2 && components[0] == "www" {
             return components[1].capitalized
@@ -35,14 +35,14 @@ extension String {
         }
         return host.capitalized
     }
-    
+
     func isValidURL() -> Bool {
         if let url = URL(string: self) {
             return url.scheme == "http" || url.scheme == "https"
         }
         return false
     }
-    
+
     func toDate() -> Date? {
         let formatter = DateFormatter()
         let formats = [
@@ -52,7 +52,7 @@ extension String {
             "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
             "yyyy-MM-dd HH:mm:ss"
         ]
-        
+
         for format in formats {
             formatter.dateFormat = format
             if let date = formatter.date(from: self) {
@@ -61,12 +61,12 @@ extension String {
         }
         return nil
     }
-    
+
     func formatAsRSSDate() -> String {
         guard let date = self.toDate() else {
             return self
         }
-        
+
         let calendar = Calendar.current
         if calendar.isDateInToday(date) {
             let formatter = DateFormatter()

@@ -16,7 +16,7 @@ struct ContentView: View {
     @StateObject private var parser = RSSParser()
     @State private var showingAddFeed = false
     @State private var showingManageFeeds = false
-    @State private var selectedFilter = FilterOption.all
+    @State private var selectedFilter: FilterOption = .all
 
     private var filteredFeedItems: [RSSFeedItem] {
         switch selectedFilter {
@@ -26,6 +26,8 @@ struct ContentView: View {
             return allFeedItems.filter { !$0.isRead }
         case .read:
             return allFeedItems.filter { $0.isRead }
+        case .feed(let feedSource):
+            return allFeedItems.filter { $0.feedSourceURL == feedSource.url }
         }
     }
 
@@ -98,7 +100,7 @@ struct ContentView: View {
 
             Spacer()
 
-            if selectedFilter == .all || selectedFilter == .unread {
+            if case .all = selectedFilter {
                 Button(action: {
                     markAllAsRead()
                 }) {
@@ -191,7 +193,7 @@ struct ContentView: View {
 
                             Spacer()
 
-                            if filter == .unread && unreadCount > 0 {
+                            if case .unread = filter, unreadCount > 0 {
                                 Text("\(unreadCount)")
                                     .font(.caption)
                                     .padding(.horizontal, 6)
@@ -237,33 +239,40 @@ struct ContentView: View {
 
             LazyVStack(spacing: 4) {
                 ForEach(feedSources, id: \.id) { feed in
-                    HStack {
-                        Circle()
-                            .fill(.blue.opacity(0.2))
-                            .frame(width: 12, height: 12)
-                            .overlay(
-                                Circle()
-                                    .stroke(.blue, lineWidth: 1)
-                            )
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(feed.name)
-                                .font(.caption)
-                                .fontWeight(.medium)
-                                .lineLimit(1)
-
-                            Text(feed.url.extractDomain())
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                                .lineLimit(1)
+                    Button(action: {
+                        withAnimation {
+                            selectedFilter = .feed(feed)
                         }
+                    }) {
+                        HStack {
+                            Circle()
+                                .fill(.blue.opacity(0.2))
+                                .frame(width: 12, height: 12)
+                                .overlay(
+                                    Circle()
+                                        .stroke(.blue, lineWidth: 1)
+                                )
 
-                        Spacer()
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(feed.name)
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .lineLimit(1)
+
+                                Text(feed.url.extractDomain())
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(1)
+                            }
+
+                            Spacer()
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(selectedFilter == .feed(feed) ? Color.blue.opacity(0.8) : Color.clear)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.clear)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .buttonStyle(PlainButtonStyle())
                     .contextMenu {
                         Button("Refresh", systemImage: "arrow.clockwise") {
                             parser.fetchFeed(from: feed, in: modelContext) {}
