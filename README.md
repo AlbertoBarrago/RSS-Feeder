@@ -21,7 +21,4 @@ This is a simple RSS reader application for iOS.
     In the Xcode toolbar, choose the simulator (e.g., "iPhone 15 Pro") or a connected Apple device you want to run the app on.
 
 4.  **Run the app:**
-    Click the "Run" button (the play icon) in the Xcode toolbar, or press `Cmd+R`. Xcode will build the app and launch it on the selected simulator or device.
-
-## Preview 
-![App Preview](screen.png)
+    Click the "Run" button (the play icon) in the Xcode toolbar, or press `Cmd+R`. Or follow the instructions inside `RUN.md` for building locally
