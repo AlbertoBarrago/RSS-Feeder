@@ -1,1 +1,0 @@
-@rpath/RSSReader.debug.dylib

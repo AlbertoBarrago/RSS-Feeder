@@ -1,2 +1,0 @@
-Target dependency graph (1 target)
-Target 'RSSReader' in project 'RSSReader' (no dependencies)
