@@ -5,9 +5,9 @@
 //  Created by Alberto Barrago on 2025.
 //
 
-import SwiftUI
 import AppKit
 import SwiftData
+import SwiftUI
 
 // MARK: - Main App Entry Point
 @main
@@ -27,7 +27,7 @@ struct RSSReaderApp: App {
     var body: some Scene {
         Settings {
             EmptyView()
-         }
+        }
     }
 }
 
@@ -100,12 +100,6 @@ class MenubarController: NSObject, ObservableObject {
         aboutItem.target = self
         menu.addItem(aboutItem)
 
-        let isDockHidden = NSApp.activationPolicy() == .accessory
-        let toggleTitle = isDockHidden ? "Show in Dock" : "Hide from Dock"
-        let toggleItem = NSMenuItem(title: toggleTitle, action: #selector(toggleDockVisibility), keyEquivalent: "h")
-        toggleItem.target = self
-        menu.addItem(toggleItem)
-
         let quitItem = NSMenuItem(title: "Quit RSS Reader", action: #selector(NSApplication.shared.terminate(_:)), keyEquivalent: "q")
         menu.addItem(quitItem)
 
@@ -122,15 +116,15 @@ class MenubarController: NSObject, ObservableObject {
 
     @objc func showAboutPanel() {
         let creditsString = """
-        Developed by: Alberto Barrago
-        © 2025 RSS Reader
-        """
+            Developed by: Alberto Barrago
+            © 2025 RSS Reader
+            """
 
         let credits = NSAttributedString(
             string: creditsString,
             attributes: [
                 .font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize),
-                .foregroundColor: NSColor.labelColor
+                .foregroundColor: NSColor.labelColor,
             ]
         )
 

@@ -5,8 +5,8 @@
 //  Created by Alberto Barrago on 02/09/25.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
@@ -127,11 +127,14 @@ struct ContentView: View {
             } else if !filteredFeedItems.isEmpty {
                 List {
                     ForEach(filteredFeedItems, id: \.id) { item in
-                        ArticleRow(item: item, onMarkAsRead: {
-                            markAsRead(item)
-                        }, onToggleReadStatus: {
-                            toggleReadStatus(item)
-                        })
+                        ArticleRow(
+                            item: item,
+                            onMarkAsRead: {
+                                markAsRead(item)
+                            },
+                            onToggleReadStatus: {
+                                toggleReadStatus(item)
+                            })
                     }
                     .onDelete(perform: deleteItems)
                 }
@@ -263,7 +266,7 @@ struct ContentView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 6))
                     .contextMenu {
                         Button("Refresh", systemImage: "arrow.clockwise") {
-                            parser.fetchFeed(from: feed, in: modelContext) { }
+                            parser.fetchFeed(from: feed, in: modelContext) {}
                         }
 
                         Divider()
@@ -331,9 +334,8 @@ struct ContentView: View {
     // MARK: - Data Management Functions
     private func addDefaultFeeds() {
         let defaultFeeds = [
-            RSSFeedSource(name: "BBC News", url: "http://feeds.bbci.co.uk/news/rss.xml"),
             RSSFeedSource(name: "Hacker News", url: "https://hnrss.org/frontpage"),
-            RSSFeedSource(name: "TechCrunch", url: "https://techcrunch.com/feed/")
+            RSSFeedSource(name: "TechCrunch", url: "https://techcrunch.com/feed/"),
         ]
 
         for feed in defaultFeeds {
@@ -347,7 +349,7 @@ struct ContentView: View {
         modelContext.insert(newFeed)
         try? modelContext.save()
 
-        parser.fetchFeed(from: newFeed, in: modelContext) { }
+        parser.fetchFeed(from: newFeed, in: modelContext) {}
     }
 
     private func deleteFeed(_ feed: RSSFeedSource) {
@@ -356,7 +358,7 @@ struct ContentView: View {
     }
 
     private func refreshAllFeeds() {
-        parser.refreshAllFeeds(sources: feedSources, in: modelContext) { }
+        parser.refreshAllFeeds(sources: feedSources, in: modelContext) {}
     }
 
     private func refreshAllFeedsAsync() async {
