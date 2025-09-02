@@ -72,10 +72,9 @@ class MenubarController: NSObject, ObservableObject {
         
         self.popover = NSPopover()
         self.popover.behavior = .transient
-        self.popover.contentSize = NSSize(width: 400, height: 500)
+        self.popover.contentSize = NSSize(width: 800, height: 600)
         self.popover.contentViewController = NSHostingController(rootView: ContentView().environment(\.modelContext, modelContext))
         
-        // Hide dock icon - this is perfect here!
         NSApp.setActivationPolicy(.accessory)
     }
     
@@ -115,10 +114,8 @@ class MenubarController: NSObject, ObservableObject {
     
     @objc private func toggleDockVisibility() {
         if NSApp.activationPolicy() == .accessory {
-            // Show in dock
             NSApp.setActivationPolicy(.regular)
         } else {
-            // Hide from dock
             NSApp.setActivationPolicy(.accessory)
         }
     }
@@ -152,7 +149,7 @@ class MenubarController: NSObject, ObservableObject {
             } else {
                 let adjustedBounds = NSRect(
                     x: button.bounds.minX,
-                    y: button.bounds.minY - 5,
+                    y: button.bounds.minY,
                     width: button.bounds.width,
                     height: button.bounds.height
                 )
