@@ -17,7 +17,7 @@ final class RSSFeedItem: Identifiable, Hashable {
     var feedSourceName: String
     var feedSourceURL: String
     var isRead: Bool = false
-    
+
     init(title: String, link: String, pubDate: String, feedSourceName: String, feedSourceURL: String) {
         self.title = title
         self.link = link
@@ -33,23 +33,38 @@ final class RSSFeedSource: Identifiable {
     var id: UUID = UUID()
     var name: String
     var url: String
-    
+
     init(name: String, url: String) {
         self.name = name
         self.url = url
     }
 }
 
-enum FilterOption: String, CaseIterable {
-    case all = "All"
-    case unread = "Unread"
-    case read = "Read"
-    
+enum FilterOption: Hashable {
+    case all
+    case unread
+    case read
+    case feed(RSSFeedSource)
+
+    var rawValue: String {
+        switch self {
+        case .all: return "All"
+        case .unread: return "Unread"
+        case .read: return "Read"
+        case .feed(let feed): return feed.name
+        }
+    }
+
     var icon: String {
         switch self {
         case .all: return "tray.full"
         case .unread: return "envelope.badge"
         case .read: return "envelope.open"
+        case .feed: return "newspaper"
         }
+    }
+
+    static var allCases: [FilterOption] {
+        return [.all, .unread, .read]
     }
 }
