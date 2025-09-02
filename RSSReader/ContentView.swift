@@ -18,14 +18,10 @@ struct ContentView: View {
     @State private var showingAddFeed = false
     @State private var showingManageFeeds = false
     @State private var selectedFilter = FilterOption.all
-    @State private var currentPage = 0
-    @State private var itemsPerPage = 20
-    @State private var isLoadingMore = false
     @State private var showingCleanupMenu = false
     
-    // Dynamic query based on filter and pagination
-    @State private var feedItems: [RSSFeedItem] = []
-    @State private var hasMoreItems = true
+    // Simplified query - no pagination
+    @Query(sort: \RSSFeedItem.pubDate, order: .reverse) private var allFeedItems: [RSSFeedItem]
     
     enum FilterOption: String, CaseIterable {
         case all = "All"
@@ -41,11 +37,20 @@ struct ContentView: View {
         }
     }
     
+    // Filtered items based on current filter
+    private var filteredFeedItems: [RSSFeedItem] {
+        switch selectedFilter {
+        case .all:
+            return allFeedItems
+        case .unread:
+            return allFeedItems.filter { !$0.isRead }
+        case .read:
+            return allFeedItems.filter { $0.isRead }
+        }
+    }
+    
     var unreadCount: Int {
-        // This could be optimized by performing a count query on modelContext
-        // instead of filtering the already loaded feedItems array.
-        // For now, this works with the current logic.
-        getTotalItemsCount(filter: .unread)
+        allFeedItems.filter { !$0.isRead }.count
     }
     
     var body: some View {
@@ -67,7 +72,6 @@ struct ContentView: View {
                                 ForEach(FilterOption.allCases, id: \.self) { filter in
                                     Button(action: {
                                         selectedFilter = filter
-                                        resetPagination()
                                     }) {
                                         HStack {
                                             Image(systemName: filter.icon)
@@ -156,17 +160,8 @@ struct ContentView: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 6))
                                     .contextMenu {
                                         Button("Refresh", systemImage: "arrow.clockwise") {
-                                            parser.fetchFeed(from: feed, in: modelContext) {
-                                                DispatchQueue.main.async {
-                                                    self.resetPagination()
-                                                }
-                                            }
+                                            parser.fetchFeed(from: feed, in: modelContext) { }
                                         }
-                                        
-                                        Button("Edit", systemImage: "pencil") {
-                                            // Future edit functionality
-                                        }
-                                        .disabled(true)
                                         
                                         Divider()
                                         
@@ -188,23 +183,26 @@ struct ContentView: View {
                     Divider()
                     
                     HStack {
-                        Button(action: {
-                            showingCleanupMenu = true
-                        }) {
+                        Menu {
+                            Button("Clean Read Articles", systemImage: "envelope.open") {
+                                cleanReadItems()
+                            }
+                            
+                            Button("Clean Old Articles (30+ days)", systemImage: "calendar") {
+                                cleanOldItems()
+                            }
+                            
+                            Divider()
+                            
+                            Button("Clean All Articles", systemImage: "trash", role: .destructive) {
+                                clearAllFeedItems()
+                            }
+                        } label: {
                             Image(systemName: "trash")
                                 .font(.title3)
                         }
                         .buttonStyle(PlainButtonStyle())
                         .help("Cleanup Options")
-                        .popover(isPresented: $showingCleanupMenu) {
-                            CleanupMenuView(onCleanRead: {
-                                cleanReadItems()
-                            }, onCleanOld: {
-                                cleanOldItems()
-                            }, onCleanAll: {
-                                clearAllFeedItems()
-                            })
-                        }
                         
                         Spacer()
                         
@@ -242,8 +240,8 @@ struct ContentView: View {
                             .font(.title2)
                             .fontWeight(.semibold)
                         
-                        if !feedItems.isEmpty {
-                            Text("\(getTotalItemsCount()) articles")
+                        if !filteredFeedItems.isEmpty {
+                            Text("\(filteredFeedItems.count) articles")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -255,30 +253,14 @@ struct ContentView: View {
                     HStack(spacing: 12) {
                         if selectedFilter == .all || selectedFilter == .unread {
                             Button(action: {
-                                markAllCurrentPageAsRead()
+                                markAllAsRead()
                             }) {
                                 Label("Mark All Read", systemImage: "envelope.open")
                                     .font(.caption)
                             }
                             .buttonStyle(.bordered)
-                            .disabled(feedItems.allSatisfy { $0.isRead })
+                            .disabled(filteredFeedItems.allSatisfy { $0.isRead })
                         }
-                        
-                        Menu {
-                            Picker("Items per page", selection: $itemsPerPage) {
-                                Text("10 items").tag(10)
-                                Text("20 items").tag(20)
-                                Text("50 items").tag(50)
-                                Text("100 items").tag(100)
-                            }
-                            .onChange(of: itemsPerPage) { _, _ in
-                                resetPagination()
-                            }
-                        } label: {
-                            Label("\(itemsPerPage)", systemImage: "line.3.horizontal.decrease.circle")
-                                .font(.caption)
-                        }
-                        .buttonStyle(.bordered)
                     }
                 }
                 .padding()
@@ -287,8 +269,8 @@ struct ContentView: View {
                 Divider()
                 
                 // Articles List
-                if parser.isLoading && feedItems.isEmpty {
-                    VStack(spacing: 0) {
+                if parser.isLoading && allFeedItems.isEmpty {
+                    VStack(spacing: 8) {
                         ProgressView()
                             .scaleEffect(1.2)
                         Text("Loading articles...")
@@ -297,39 +279,20 @@ struct ContentView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     
-                } else if !feedItems.isEmpty {
-                    ScrollViewReader { proxy in
-                        List {
-                            ForEach(feedItems, id: \.id) { item in
-                                ArticleRow(item: item, onMarkAsRead: {
-                                    markAsRead(item)
-                                }, onToggleReadStatus: {
-                                    toggleReadStatus(item)
-                                })
-                                .onAppear {
-                                    if item.id == feedItems.last?.id {
-                                        loadMoreItems()
-                                    }
-                                }
-                            }
-                            .onDelete(perform: deleteItems)
-                            
-                            // Load More Section
-                            if hasMoreItems {
-                                LoadMoreView(isLoading: isLoadingMore, onLoadMore: {
-                                    loadMoreItems()
-                                })
-                            }
+                } else if !filteredFeedItems.isEmpty {
+                    List {
+                        ForEach(filteredFeedItems, id: \.id) { item in
+                            ArticleRow(item: item, onMarkAsRead: {
+                                markAsRead(item)
+                            }, onToggleReadStatus: {
+                                toggleReadStatus(item)
+                            })
                         }
-                        .listStyle(PlainListStyle())
-                        .refreshable {
-                            await refreshAllFeedsAsync()
-                        }
-                        .onChange(of: selectedFilter) { _, _ in
-                            withAnimation {
-                                proxy.scrollTo(feedItems.first?.id, anchor: .top)
-                            }
-                        }
+                        .onDelete(perform: deleteItems)
+                    }
+                    .listStyle(PlainListStyle())
+                    .refreshable {
+                        await refreshAllFeedsAsync()
                     }
                     
                 } else if feedSources.isEmpty {
@@ -354,36 +317,6 @@ struct ContentView: View {
                         }
                     )
                 }
-                
-                // Bottom Status Bar
-                if !feedItems.isEmpty {
-                    HStack {
-                        Text("Showing \(feedItems.count) of \(getTotalItemsCount()) articles")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        Spacer()
-                        
-                        if currentPage > 0 {
-                            Button("Back to Top") {
-                                resetPagination()
-                            }
-                            .font(.caption)
-                            .buttonStyle(.borderless)
-                        }
-                        
-                        if hasMoreItems && !isLoadingMore {
-                            Button("Load More") {
-                                loadMoreItems()
-                            }
-                            .font(.caption)
-                            .buttonStyle(.borderedProminent)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                    .background(Color(.controlBackgroundColor).opacity(0.3))
-                }
             }
         }
         .frame(minWidth: 300, minHeight: 200)
@@ -399,32 +332,10 @@ struct ContentView: View {
             if feedSources.isEmpty {
                 addDefaultFeeds()
             }
-            loadInitialItems()
         }
     }
     
     // MARK: - Helper Functions
-    private func getTotalItemsCount(filter: FilterOption? = nil) -> Int {
-        let currentFilter = filter ?? selectedFilter
-        do {
-            var predicate: Predicate<RSSFeedItem>?
-            
-            switch currentFilter {
-            case .all:
-                predicate = nil
-            case .unread:
-                predicate = #Predicate<RSSFeedItem> { !$0.isRead }
-            case .read:
-                predicate = #Predicate<RSSFeedItem> { $0.isRead }
-            }
-            
-            let fetchDescriptor = FetchDescriptor<RSSFeedItem>(predicate: predicate)
-            return try modelContext.fetchCount(fetchDescriptor)
-        } catch {
-            return 0
-        }
-    }
-    
     private func extractDomain(from urlString: String) -> String {
         guard let url = URL(string: urlString),
               let host = url.host else {
@@ -441,70 +352,9 @@ struct ContentView: View {
     private func deleteFeed(_ feed: RSSFeedSource) {
         modelContext.delete(feed)
         try? modelContext.save()
-        resetPagination()
     }
     
     // MARK: - Data Management Functions
-    private func loadInitialItems() {
-        currentPage = 0
-        hasMoreItems = true
-        feedItems = []
-        loadMoreItems()
-    }
-    
-    private func resetPagination() {
-        currentPage = 0
-        hasMoreItems = true
-        feedItems = []
-        loadMoreItems()
-    }
-    
-    private func loadMoreItems() {
-        guard !isLoadingMore && hasMoreItems else { return }
-        
-        isLoadingMore = true
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            let offset = currentPage * itemsPerPage
-            
-            do {
-                var predicate: Predicate<RSSFeedItem>?
-                
-                switch selectedFilter {
-                case .all:
-                    predicate = nil
-                case .unread:
-                    predicate = #Predicate<RSSFeedItem> { !$0.isRead }
-                case .read:
-                    predicate = #Predicate<RSSFeedItem> { $0.isRead }
-                }
-                
-                var fetchDescriptor = FetchDescriptor<RSSFeedItem>(
-                    predicate: predicate,
-                    sortBy: [SortDescriptor(\.pubDate, order: .reverse)]
-                )
-                fetchDescriptor.fetchLimit = itemsPerPage
-                fetchDescriptor.fetchOffset = offset
-                
-                let newItems = try modelContext.fetch(fetchDescriptor)
-                
-                if !newItems.isEmpty {
-                    feedItems.append(contentsOf: newItems)
-                    currentPage += 1
-                    hasMoreItems = newItems.count == itemsPerPage
-                } else {
-                    hasMoreItems = false
-                }
-                
-            } catch {
-                print("Error loading items: \(error)")
-                hasMoreItems = false
-            }
-            
-            isLoadingMore = false
-        }
-    }
-    
     private func addDefaultFeeds() {
         let defaultFeeds = [
             RSSFeedSource(name: "BBC News", url: "http://feeds.bbci.co.uk/news/rss.xml"),
@@ -523,28 +373,17 @@ struct ContentView: View {
         modelContext.insert(newFeed)
         try? modelContext.save()
         
-        parser.fetchFeed(from: newFeed, in: modelContext) {
-            DispatchQueue.main.async {
-                self.resetPagination()
-            }
-        }
+        parser.fetchFeed(from: newFeed, in: modelContext) { }
     }
     
     private func refreshAllFeeds() {
-        parser.refreshAllFeeds(sources: feedSources, in: modelContext) {
-            DispatchQueue.main.async {
-                self.resetPagination()
-            }
-        }
+        parser.refreshAllFeeds(sources: feedSources, in: modelContext) { }
     }
     
     private func refreshAllFeedsAsync() async {
         return await withCheckedContinuation { continuation in
             parser.refreshAllFeeds(sources: feedSources, in: modelContext) {
-                DispatchQueue.main.async {
-                    self.resetPagination()
-                    continuation.resume()
-                }
+                continuation.resume()
             }
         }
     }
@@ -559,8 +398,8 @@ struct ContentView: View {
         try? modelContext.save()
     }
     
-    private func markAllCurrentPageAsRead() {
-        for item in feedItems where !item.isRead {
+    private func markAllAsRead() {
+        for item in filteredFeedItems where !item.isRead {
             item.isRead = true
         }
         try? modelContext.save()
@@ -570,7 +409,6 @@ struct ContentView: View {
         do {
             try modelContext.delete(model: RSSFeedItem.self, where: #Predicate { $0.isRead })
             try modelContext.save()
-            resetPagination()
         } catch {
             print("Error cleaning read items: \(error)")
         }
@@ -578,7 +416,6 @@ struct ContentView: View {
     
     private func cleanOldItems() {
         let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
-        
         
         let formatter = DateFormatter()
         let formats = [
@@ -606,17 +443,14 @@ struct ContentView: View {
                     }
                 }
 
-
                 if let date = itemDate, date < thirtyDaysAgo {
                     modelContext.delete(item)
                     deletedCount += 1
                 }
             }
             
-            
             if deletedCount > 0 {
                 try modelContext.save()
-                resetPagination()
                 print("Cleaned \(deletedCount) old items")
             } else {
                 print("No old items to clean.")
@@ -630,10 +464,10 @@ struct ContentView: View {
     private func deleteItems(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                modelContext.delete(feedItems[index])
+                let item = filteredFeedItems[index]
+                modelContext.delete(item)
             }
             try? modelContext.save()
-            feedItems.remove(atOffsets: offsets)
         }
     }
     
@@ -641,54 +475,9 @@ struct ContentView: View {
         do {
             try modelContext.delete(model: RSSFeedItem.self)
             try modelContext.save()
-            resetPagination()
         } catch {
             print("Error clearing all feed items: \(error)")
         }
-    }
-}
-
-
-// MARK: - Nuova Vista per l'Header della Sidebar
-struct SidebarHeaderView: View {
-    @ObservedObject var parser: RSSParser
-    var onAddFeed: () -> Void
-    var onManageFeeds: () -> Void
-    var onRefreshAll: () -> Void
-
-    var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text("RSS Reader")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                Spacer()
-                
-                Menu {
-                    Button("Add Feed", systemImage: "plus") { onAddFeed() }
-                    Button("Manage Feeds", systemImage: "list.bullet") { onManageFeeds() }
-                    Divider()
-                    Button("Refresh All", systemImage: "arrow.clockwise") { onRefreshAll() }
-                        .disabled(parser.isLoading)
-                    Divider()
-                    Button("Settings", systemImage: "gear") { }
-                        .disabled(true)
-                    Button("Quit", systemImage: "xmark") {
-                        NSApplication.shared.terminate(nil)
-                    }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .font(.title2)
-                        .foregroundColor(.primary)
-                }
-                .menuStyle(BorderlessButtonMenuStyle())
-            }
-            .padding([.horizontal, .bottom])
-            .padding(.top)
-            
-            Divider()
-        }
-        .background(Color(.controlBackgroundColor))
     }
 }
 
@@ -780,33 +569,6 @@ struct ArticleRow: View {
     }
 }
 
-struct LoadMoreView: View {
-    let isLoading: Bool
-    let onLoadMore: () -> Void
-    
-    var body: some View {
-        HStack {
-            Spacer()
-            if isLoading {
-                HStack(spacing: 8) {
-                    ProgressView()
-                        .scaleEffect(0.8)
-                    Text("Loading more articles...")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            } else {
-                Button("Load More Articles") {
-                    onLoadMore()
-                }
-                .buttonStyle(.bordered)
-            }
-            Spacer()
-        }
-        .padding()
-    }
-}
-
 struct EmptyStateView: View {
     let icon: String
     let title: String
@@ -837,34 +599,6 @@ struct EmptyStateView: View {
             .buttonStyle(.borderedProminent)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
-
-struct CleanupMenuView: View {
-    let onCleanRead: () -> Void
-    let onCleanOld: () -> Void
-    let onCleanAll: () -> Void
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Cleanup Options")
-                .font(.headline)
-                .padding(.bottom, 4)
-            
-            Button("Clean Read Articles", systemImage: "envelope.open") {
-                onCleanRead()
-            }
-            
-            Button("Clean Old Articles (30+ days)", systemImage: "calendar") {
-                onCleanOld()
-            }
-            
-            Divider()
-            
-            Button("Clean All Articles", systemImage: "trash", role: .destructive) {
-                onCleanAll()
-            }
-        }
     }
 }
 
