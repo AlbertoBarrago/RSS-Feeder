@@ -362,8 +362,16 @@ struct ContentView: View {
     }
 
     private func deleteFeed(_ feed: RSSFeedSource) {
-        modelContext.delete(feed)
-        try? modelContext.save()
+        let feedURL = feed.url
+        do {
+            try modelContext.delete(model: RSSFeedItem.self, where: #Predicate { item in
+                item.feedSourceURL == feedURL
+            })
+            modelContext.delete(feed)
+            try modelContext.save()
+        } catch {
+            print("Error deleting feed and its items: \(error)")
+        }
     }
 
     private func refreshAllFeeds() {
