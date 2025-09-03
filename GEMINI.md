@@ -1,1 +1,0 @@
-1. Do Not Compile for xCode, you have not the right permission and and Fleed does not support yet xCode
