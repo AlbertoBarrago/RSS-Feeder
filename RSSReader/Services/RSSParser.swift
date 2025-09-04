@@ -13,15 +13,18 @@ class RSSParser: NSObject, ObservableObject {
 
     func fetchFeed(from feedSource: RSSFeedSource, in context: ModelContext, completion: (() -> Void)? = nil) {
         guard let url = URL(string: feedSource.url) else {
+            #if DEBUG
             print("Invalid URL: \(feedSource.url)")
+            #endif
             completion?()
             return
         }
 
+        #if DEBUG
         print("Starting request for \(feedSource.name) at \(Date())")
-        DispatchQueue.main.async {
-            self.isLoading = true
-        }
+        #endif
+
+        self.isLoading = true
 
         DispatchQueue.global(qos: .userInitiated).async {
             var request = URLRequest(url: url)
@@ -41,10 +44,12 @@ class RSSParser: NSObject, ObservableObject {
                     return
                 }
 
+                #if DEBUG
                 if let httpResponse = response as? HTTPURLResponse {
                     print("Response status code for \(feedSource.name): \(httpResponse.statusCode)")
                     print("Response headers for \(feedSource.name): \(httpResponse.allHeaderFields)")
                 }
+                #endif
 
                 guard let data = data else {
                     print("No data received for \(feedSource.name)")
@@ -81,9 +86,7 @@ class RSSParser: NSObject, ObservableObject {
         }
 
         group.notify(queue: .main) {
-            DispatchQueue.main.async {
-                self.isLoading = false
-            }
+            self.isLoading = false
             completion()
         }
     }
@@ -105,7 +108,7 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
         self.modelContext = modelContext
     }
 
-    func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String] = [:]) {
+    func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String: String] = [:]) {
         currentElement = elementName.lowercased()
 
         if currentElement == "item" || currentElement == "entry" {
@@ -136,8 +139,9 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
 
     func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
         if (elementName.lowercased() == "item" || elementName.lowercased() == "entry") && isInItem,
-           !currentTitle.isEmpty,
-           !currentLink.isEmpty {
+            !currentTitle.isEmpty,
+            !currentLink.isEmpty
+        {
 
             let cleanedDate = currentPubDate.replacingOccurrences(of: "+0000", with: "")
                 .replacingOccurrences(of: "GMT", with: "")
@@ -187,4 +191,3 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
         print("XML parsing error: \(parseError.localizedDescription)")
     }
 }
-
