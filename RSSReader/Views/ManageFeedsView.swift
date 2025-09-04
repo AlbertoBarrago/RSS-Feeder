@@ -12,6 +12,7 @@ struct ManageFeedsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Query private var feedSources: [RSSFeedSource]
+    @StateObject private var parser = RSSParser()
 
     var body: some View {
         VStack(spacing: 20) {
@@ -34,6 +35,15 @@ struct ManageFeedsView: View {
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                     .lineLimit(1)
+                                if let lastUpdated = feedSource.lastUpdated {
+                                    Text("Last updated: \(lastUpdated, style: .relative)")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                } else {
+                                    Text("Not updated yet")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
                             }
 
                             Spacer()
@@ -50,10 +60,19 @@ struct ManageFeedsView: View {
                 }
             }
 
-            Button("Done") {
-                dismiss()
+            HStack {
+                Button("Refresh All") {
+                    parser.refreshAllFeeds(sources: feedSources, in: modelContext) {}
+                }
+                .disabled(parser.isLoading)
+
+                Spacer()
+
+                Button("Done") {
+                    dismiss()
+                }
+                .buttonStyle(.borderedProminent)
             }
-            .buttonStyle(.borderedProminent)
         }
         .padding()
         .frame(width: 500, height: 400)

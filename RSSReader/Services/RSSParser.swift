@@ -8,35 +8,23 @@
 import Foundation
 import SwiftData
 
-class RSSParser: NSObject, ObservableObject, XMLParserDelegate {
+class RSSParser: NSObject, ObservableObject {
     @Published var isLoading = false
-
-    private var modelContext: ModelContext?
-    private var currentFeedSource: RSSFeedSource?
-    private var completionHandler: (() -> Void)?
-
-    private var currentElement = ""
-    private var currentTitle = ""
-    private var currentLink = ""
-    private var currentPubDate = ""
-    private var parsedItems: [RSSFeedItem] = []
-    private var isInItem = false
 
     func fetchFeed(from feedSource: RSSFeedSource, in context: ModelContext, completion: (() -> Void)? = nil) {
         guard let url = URL(string: feedSource.url) else {
+            #if DEBUG
             print("Invalid URL: \(feedSource.url)")
+            #endif
             completion?()
             return
         }
 
-        self.modelContext = context
-        self.currentFeedSource = feedSource
-        self.completionHandler = completion
-        self.parsedItems = []
+        #if DEBUG
+        print("Starting request for \(feedSource.name) at \(Date())")
+        #endif
 
-        DispatchQueue.main.async {
-            self.isLoading = true
-        }
+        self.isLoading = true
 
         DispatchQueue.global(qos: .userInitiated).async {
             var request = URLRequest(url: url)
@@ -47,7 +35,7 @@ class RSSParser: NSObject, ObservableObject, XMLParserDelegate {
                 defer {
                     DispatchQueue.main.async {
                         self.isLoading = false
-                        self.completionHandler?()
+                        completion?()
                     }
                 }
 
@@ -56,13 +44,21 @@ class RSSParser: NSObject, ObservableObject, XMLParserDelegate {
                     return
                 }
 
+                #if DEBUG
+                if let httpResponse = response as? HTTPURLResponse {
+                    print("Response status code for \(feedSource.name): \(httpResponse.statusCode)")
+                    print("Response headers for \(feedSource.name): \(httpResponse.allHeaderFields)")
+                }
+                #endif
+
                 guard let data = data else {
                     print("No data received for \(feedSource.name)")
                     return
                 }
 
                 let parser = XMLParser(data: data)
-                parser.delegate = self
+                let delegate = RSSParserDelegate(feedSource: feedSource, modelContext: context)
+                parser.delegate = delegate
                 parser.parse()
             }
 
@@ -76,6 +72,10 @@ class RSSParser: NSObject, ObservableObject, XMLParserDelegate {
             return
         }
 
+        DispatchQueue.main.async {
+            self.isLoading = true
+        }
+
         let group = DispatchGroup()
 
         for source in sources {
@@ -86,12 +86,29 @@ class RSSParser: NSObject, ObservableObject, XMLParserDelegate {
         }
 
         group.notify(queue: .main) {
+            self.isLoading = false
             completion()
         }
     }
+}
 
-    // MARK: - XML Parser Delegate Methods
-    func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String] = [:]) {
+class RSSParserDelegate: NSObject, XMLParserDelegate {
+    private var currentFeedSource: RSSFeedSource
+    private var modelContext: ModelContext
+
+    private var currentElement = ""
+    private var currentTitle = ""
+    private var currentLink = ""
+    private var currentPubDate = ""
+    private var parsedItems: [RSSFeedItem] = []
+    private var isInItem = false
+
+    init(feedSource: RSSFeedSource, modelContext: ModelContext) {
+        self.currentFeedSource = feedSource
+        self.modelContext = modelContext
+    }
+
+    func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String: String] = [:]) {
         currentElement = elementName.lowercased()
 
         if currentElement == "item" || currentElement == "entry" {
@@ -122,9 +139,9 @@ class RSSParser: NSObject, ObservableObject, XMLParserDelegate {
 
     func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
         if (elementName.lowercased() == "item" || elementName.lowercased() == "entry") && isInItem,
-           let feedSource = currentFeedSource,
-           !currentTitle.isEmpty,
-           !currentLink.isEmpty {
+            !currentTitle.isEmpty,
+            !currentLink.isEmpty
+        {
 
             let cleanedDate = currentPubDate.replacingOccurrences(of: "+0000", with: "")
                 .replacingOccurrences(of: "GMT", with: "")
@@ -134,8 +151,8 @@ class RSSParser: NSObject, ObservableObject, XMLParserDelegate {
                 title: currentTitle.trimmingCharacters(in: .whitespacesAndNewlines),
                 link: currentLink.trimmingCharacters(in: .whitespacesAndNewlines),
                 pubDate: cleanedDate.isEmpty ? Date().description : cleanedDate,
-                feedSourceName: feedSource.name,
-                feedSourceURL: feedSource.url
+                feedSourceName: currentFeedSource.name,
+                feedSourceURL: currentFeedSource.url
             )
             parsedItems.append(newItem)
             isInItem = false
@@ -145,25 +162,25 @@ class RSSParser: NSObject, ObservableObject, XMLParserDelegate {
     }
 
     func parserDidEndDocument(_ parser: XMLParser) {
-        guard let context = modelContext else { return }
-
         DispatchQueue.main.async {
             do {
                 let allLinks = self.parsedItems.map { $0.link }
                 let fetchDescriptor = FetchDescriptor<RSSFeedItem>(
                     predicate: #Predicate { allLinks.contains($0.link) }
                 )
-                let existingItems = try context.fetch(fetchDescriptor)
+                let existingItems = try self.modelContext.fetch(fetchDescriptor)
                 let existingLinks = Set(existingItems.map { $0.link })
 
                 let newItems = self.parsedItems.filter { !existingLinks.contains($0.link) }
 
                 for item in newItems {
-                    context.insert(item)
+                    self.modelContext.insert(item)
                 }
 
-                try? context.save()
-                print("Added \(newItems.count) new items from \(self.currentFeedSource?.name ?? "unknown")")
+                self.currentFeedSource.lastUpdated = Date()
+
+                try? self.modelContext.save()
+                print("Added \(newItems.count) new items from \(self.currentFeedSource.name)")
             } catch {
                 print("Error fetching or saving items: \(error)")
             }
