@@ -142,7 +142,7 @@ struct ContentView: View {
                 }
                 .listStyle(PlainListStyle())
                 .refreshable {
-                    await refreshAllFeedsAsync()
+                    await refreshCurrentFilter()
                 }
             } else if feedSources.isEmpty {
                 EmptyStateView(
@@ -161,7 +161,9 @@ struct ContentView: View {
                     subtitle: "Your feeds don't have any articles yet",
                     actionTitle: "Refresh Feeds",
                     action: {
-                        refreshAllFeeds()
+                        Task {
+                            await refreshCurrentFilter()
+                        }
                     }
                 )
             }
@@ -275,7 +277,10 @@ struct ContentView: View {
                     .buttonStyle(PlainButtonStyle())
                     .contextMenu {
                         Button("Refresh", systemImage: "arrow.clockwise") {
-                            parser.fetchFeed(from: feed, in: modelContext) {}
+                            parser.isLoading = true
+                            parser.fetchFeed(from: feed, in: modelContext) {
+                                parser.isLoading = false
+                            }
                         }
 
                         Divider()
@@ -324,7 +329,7 @@ struct ContentView: View {
                 }
 
                 Button(action: {
-                    refreshAllFeeds()
+                    refreshCurrentFilter()
                 }) {
                     Image(systemName: "arrow.clockwise")
                         .font(.title3)
@@ -374,8 +379,23 @@ struct ContentView: View {
         }
     }
 
+    private func refreshCurrentFilter() {
+        switch selectedFilter {
+        case .feed(let feedSource):
+            parser.isLoading = true
+            parser.fetchFeed(from: feedSource, in: modelContext) {
+                parser.isLoading = false
+            }
+        default:
+            refreshAllFeeds()
+        }
+    }
+
     private func refreshAllFeeds() {
-        parser.refreshAllFeeds(sources: feedSources, in: modelContext) {}
+        parser.isLoading = true
+        parser.refreshAllFeeds(sources: feedSources, in: modelContext) {
+            parser.isLoading = false
+        }
     }
 
     private func refreshAllFeedsAsync() async {
@@ -383,6 +403,19 @@ struct ContentView: View {
             parser.refreshAllFeeds(sources: feedSources, in: modelContext) {
                 continuation.resume()
             }
+        }
+    }
+
+    private func refreshCurrentFilter() async {
+        switch selectedFilter {
+        case .feed(let feedSource):
+            return await withCheckedContinuation { continuation in
+                parser.fetchFeed(from: feedSource, in: modelContext) {
+                    continuation.resume()
+                }
+            }
+        default:
+            return await refreshAllFeedsAsync()
         }
     }
 
