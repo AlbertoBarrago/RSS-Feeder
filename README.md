@@ -1,6 +1,8 @@
 # RSSReader
 
-This is a simple RSS reader application for iOS.
+A simple Menu Bar RSS reader application for iOS.
+
+![screen](screen.png)
 
 ## Prerequisites
 
@@ -55,4 +57,5 @@ sequenceDiagram
     Parser-->>ContentView: completion (group notify)
   end
   ```
+
 
