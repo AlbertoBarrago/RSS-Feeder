@@ -118,7 +118,7 @@ struct ContentView: View {
     private var articlesList: some View {
         Group {
             if parser.isLoading && allFeedItems.isEmpty {
-                VStack(spacing: 8) {
+                VStack(spacing: 0) {
                     ProgressView()
                         .controlSize(.large)
                     Text("Loading articles...")
@@ -178,7 +178,6 @@ struct ContentView: View {
                 .fontWeight(.semibold)
                 .foregroundColor(.secondary)
                 .padding(.horizontal)
-                .padding(.top)
 
             VStack(spacing: 5) {
                 ForEach(FilterOption.allCases, id: \.self) { filter in
@@ -205,7 +204,7 @@ struct ContentView: View {
                                     .clipShape(Capsule())
                             }
                         }
-                        .padding(.horizontal, 12)
+                        .padding(.horizontal, 6)
                         .padding(.vertical, 5)
                         .background(selectedFilter == filter ? .blue : .clear)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -348,8 +347,9 @@ struct ContentView: View {
     // MARK: - Data Management Functions
     private func addDefaultFeeds() {
         let defaultFeeds = [
-            RSSFeedSource(name: "Hacker News", url: "https://hnrss.org/frontpage"),
-            RSSFeedSource(name: "TechCrunch", url: "https://techcrunch.com/feed/"),
+            RSSFeedSource(name: "joshwcomeau", url: "https://www.joshwcomeau.com/rss.xml"),
+            RSSFeedSource(name: "nytimes-tecnology", url: "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml"),
+            RSSFeedSource(name: "rsshub-science", url: "https://rsshub.app/science/blogs/pipeline"),
         ]
 
         for feed in defaultFeeds {
