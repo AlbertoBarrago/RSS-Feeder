@@ -48,6 +48,7 @@ class MenubarController: NSObject, ObservableObject {
 
     private var modelContainer: ModelContainer
     private var modelContext: ModelContext
+    @AppStorage("keepOpen") private var keepOpen: Bool = false
 
     override init() {
         do {
@@ -85,6 +86,7 @@ class MenubarController: NSObject, ObservableObject {
                 showRightClickMenu()
             } else if event.type == .leftMouseUp {
                 // Left-click: Toggle the popover
+                popover.behavior = keepOpen ? .semitransient : .transient
                 togglePopover(self)
             }
         }
@@ -104,6 +106,10 @@ class MenubarController: NSObject, ObservableObject {
         menu.addItem(quitItem)
 
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: button.bounds.height), in: button)
+    }
+
+    @objc private func toggleKeepOpen() {
+        keepOpen.toggle()
     }
 
     @objc private func toggleDockVisibility() {
