@@ -102,7 +102,11 @@ class MenubarController: NSObject, ObservableObject {
     }
 
     private func startTimer() {
-        timer?.invalidate()
+        deinit {
+             timer?.invalidate()
+             timer = nil
+            }
+
         timer = Timer.scheduledTimer(withTimeInterval: pollingInterval, repeats: true) { [weak self] _ in
             DispatchQueue.main.async {
                 self?.refreshFeeds()

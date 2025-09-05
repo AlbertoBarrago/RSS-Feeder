@@ -1,6 +1,6 @@
 # RSSReader
 
-A simple Menu Bar RSS reader application for iOS.
+A simple Menu Bar RSS reader application for macOS.
 
 _old screen, now is better but if you want to see you have to download it!_
 ![screen](screen.png)
@@ -20,8 +20,8 @@ _old screen, now is better but if you want to see you have to download it!_
 2.  **Open the project in Xcode:**
     Double-click on the `RSSReader.xcodeproj` file to open the project in Xcode.
 
-3.  **Select a simulator or device:**
-    In the Xcode toolbar, choose the simulator (e.g., "iPhone 15 Pro") or a connected Apple device you want to run the app on.
+3.  **Select a destination (Mac):**
+    In the Xcode toolbar, choose "My Mac (macOS)". This is a macOS menu bar app; do not select an iOS simulator.
 
 4.  **Run the app:**
-    Click the "Run" button (the play icon) in the Xcode toolbar, or press `Cmd+R`. Or follow the instructions inside `RUN.md` for building locally
+    Click the Run button (play icon) in Xcode or press Cmd+R. For CLI builds, see RUN.md.
