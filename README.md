@@ -2,7 +2,6 @@
 
 A simple Menu Bar RSS reader application for macOS.
 
-_old screen, now is better but if you want to see you have to download it!_
 ![screen](screen.png)
 
 ## Prerequisites
