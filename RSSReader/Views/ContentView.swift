@@ -16,7 +16,8 @@ struct ContentView: View {
     @StateObject private var parser = RSSParser()
     @State private var showingAddFeed = false
     @State private var showingManageFeeds = false
-    @State private var selectedFilter: FilterOption = .all
+    @State private var selectedFilterIndex: Int = 0
+    @State private var selectedFeedFilter: RSSFeedSource? = nil
 
     private var filteredFeedItems: [RSSFeedItem] {
         switch selectedFilter {
@@ -28,6 +29,37 @@ struct ContentView: View {
             return allFeedItems.filter { $0.isRead }
         case .feed(let feedSource):
             return allFeedItems.filter { $0.feedSourceURL == feedSource.url }
+        }
+    }
+    
+    private func getFilterCount(for filter: FilterOption) -> Int? {
+        switch filter {
+        case .all:
+            return allCount > 0 ? allCount : nil
+        case .unread:
+            return unreadCount > 0 ? unreadCount : nil
+        case .read:
+            return readCount > 0 ? readCount : nil
+        case .feed:
+            return nil
+        }
+    }
+    
+    private var selectedFilter: FilterOption {
+        if let feedFilter = selectedFeedFilter {
+            return .feed(feedFilter)
+        }
+        return FilterOption.allCases[selectedFilterIndex]
+    }
+    
+    private func isFilterSelected(_ filter: FilterOption) -> Bool {
+        switch (selectedFilter, filter) {
+        case (.all, .all), (.unread, .unread), (.read, .read):
+            return true
+        case (.feed(let selectedFeed), .feed(let filterFeed)):
+            return selectedFeed.id == filterFeed.id
+        default:
+            return false
         }
     }
 
@@ -192,57 +224,64 @@ struct ContentView: View {
                 .padding(.horizontal)
 
             VStack(spacing: 5) {
-                ForEach(FilterOption.allCases, id: \.self) { filter in
-                    Button(action: {
-                        selectedFilter = filter
-                    }) {
-                        HStack {
-                            Image(systemName: filter.icon)
-                                .frame(width: 16)
-                                .foregroundColor(selectedFilter == filter ? .white : .primary)
-
-                            Text(filter.rawValue)
-                                .foregroundColor(selectedFilter == filter ? .white : .primary)
-
-                            Spacer()
-
-                            if case .unread = filter, unreadCount > 0 {
-                                Text("\(unreadCount)")
-                                    .font(.caption)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(selectedFilter == filter ? Color.white.opacity(0.3) : Color.blue)
-                                    .foregroundColor(selectedFilter == filter ? .white : .primary)
-                                    .clipShape(Capsule())
-                            } else if case .read = filter, readCount > 0 {
-                                Text("\(readCount)")
-                                    .font(.caption)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(selectedFilter == filter ? Color.white.opacity(0.3) : Color.blue)
-                                    .foregroundColor(selectedFilter == filter ? .white : .primary)
-                                    .clipShape(Capsule())
-                            } else if case .all = filter, allCount > 0 {
-                                Text("\(allCount)")
-                                    .font(.caption)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(selectedFilter == filter ? Color.white.opacity(0.3) : Color.blue)
-                                    .foregroundColor(selectedFilter == filter ? .white : .primary)
-                                    .clipShape(Capsule())
-                            }
-                        }
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 5)
-                        .background(selectedFilter == filter ? Color.blue : Color.clear)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-                .padding(.horizontal, 8)
+                filterButton(for: .all, index: 0)
+                filterButton(for: .unread, index: 1)
+                filterButton(for: .read, index: 2)
             }
+            .padding(.horizontal, 8)
         }
         .padding(.top)
+    }
+    
+    private func filterButton(for filter: FilterOption, index: Int) -> some View {
+        let isSelected = selectedFilterIndex == index && selectedFeedFilter == nil
+        
+        return Button(action: {
+            selectedFilterIndex = index
+            selectedFeedFilter = nil
+        }) {
+            filterButtonContent(filter: filter, isSelected: isSelected)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+
+    private func filterButtonContent(filter: FilterOption, isSelected: Bool) -> some View {
+        HStack {
+            filterButtonIcon(filter: filter, isSelected: isSelected)
+            filterButtonText(filter: filter, isSelected: isSelected)
+            Spacer()
+            filterButtonCounter(filter: filter, isSelected: isSelected)
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 5)
+        .background(isSelected ? Color.gray.opacity(0.2) : Color.clear)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private func filterButtonIcon(filter: FilterOption, isSelected: Bool) -> some View {
+        Image(systemName: filter.icon)
+            .frame(width: 16)
+            .foregroundColor(.primary)
+    }
+
+    private func filterButtonText(filter: FilterOption, isSelected: Bool) -> some View {
+        Text(filter.rawValue)
+            .foregroundColor(.primary)
+    }
+
+    @ViewBuilder
+    private func filterButtonCounter(filter: FilterOption, isSelected: Bool) -> some View {
+        if let count = getFilterCount(for: filter), count > 0 {
+            let shouldShowBlue = (filter == .unread && count > 0)
+            
+            Text("\(count)")
+                .font(.caption)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(shouldShowBlue ? Color.blue : Color.gray)
+                .foregroundColor(.white)
+                .clipShape(Capsule())
+        }
     }
 
     private var feedsSection: some View {
@@ -270,7 +309,8 @@ struct ContentView: View {
                 ForEach(feedSources, id: \.id) { feed in
                     Button(action: {
                         withAnimation {
-                            selectedFilter = .feed(feed)
+                            selectedFilterIndex = -1
+                            selectedFeedFilter = feed
                         }
                     }) {
                         HStack {
@@ -302,14 +342,14 @@ struct ContentView: View {
                                     .font(.caption)
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
-                                    .background(selectedFilter == .feed(feed) ? .white.opacity(0.3) : .blue)
-                                    .foregroundColor(selectedFilter == .feed(feed) ? .white : .white)
+                                    .background(Color.blue)
+                                    .foregroundColor(.white)
                                     .clipShape(Capsule())
                             }
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(selectedFilter == .feed(feed) ? Color.blue.opacity(0.8) : Color.clear)
+                        .background(selectedFeedFilter?.id == feed.id ? Color.gray.opacity(0.2) : Color.clear)
                         .clipShape(RoundedRectangle(cornerRadius: 6))
                     }
                     .buttonStyle(PlainButtonStyle())

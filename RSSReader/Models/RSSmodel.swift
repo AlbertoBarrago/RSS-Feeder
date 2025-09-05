@@ -68,4 +68,29 @@ enum FilterOption: Hashable {
     static var allCases: [FilterOption] {
         return [.all, .unread, .read]
     }
+    
+    static func == (lhs: FilterOption, rhs: FilterOption) -> Bool {
+        switch (lhs, rhs) {
+        case (.all, .all), (.unread, .unread), (.read, .read):
+            return true
+        case (.feed(let lhsFeed), .feed(let rhsFeed)):
+            return lhsFeed.id == rhsFeed.id
+        default:
+            return false
+        }
+    }
+    
+    func hash(into hasher: inout Hasher) {
+         switch self {
+         case .all:
+             hasher.combine(0)
+         case .unread:
+             hasher.combine(1)
+         case .read:
+             hasher.combine(2)
+         case .feed(let feed):
+             hasher.combine(3)
+             hasher.combine(feed.id)
+         }
+     }
 }
