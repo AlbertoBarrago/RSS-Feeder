@@ -64,6 +64,7 @@ class MenubarController: NSObject, ObservableObject {
 
     private var timer: Timer?
 
+
     override init() {
         do {
             modelContainer = try ModelContainer(for: RSSFeedItem.self, RSSFeedSource.self)

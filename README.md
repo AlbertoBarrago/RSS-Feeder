@@ -25,4 +25,3 @@ _old screen, now is better but if you want to see you have to download it!_
 
 4.  **Run the app:**
     Click the "Run" button (the play icon) in the Xcode toolbar, or press `Cmd+R`. Or follow the instructions inside `RUN.md` for building locally
-
