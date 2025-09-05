@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import UserNotifications
 
 class RSSParser: NSObject, ObservableObject {
     @Published var isLoading = false
@@ -177,6 +178,10 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
                     self.modelContext.insert(item)
                 }
 
+                if !newItems.isEmpty {
+                    self.showNotification(for: newItems, from: self.currentFeedSource)
+                }
+
                 self.currentFeedSource.lastUpdated = Date()
 
                 try? self.modelContext.save()
@@ -189,5 +194,15 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
 
     func parser(_ parser: XMLParser, parseErrorOccurred parseError: Error) {
         print("XML parsing error: \(parseError.localizedDescription)")
+    }
+
+    private func showNotification(for newItems: [RSSFeedItem], from feedSource: RSSFeedSource) {
+        let content = UNMutableNotificationContent()
+        content.title = "New articles from \(feedSource.name)"
+        content.body = "Found \(newItems.count) new articles."
+        content.sound = .default
+
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(request)
     }
 }

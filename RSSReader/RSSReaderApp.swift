@@ -8,6 +8,8 @@
 import AppKit
 import SwiftData
 import SwiftUI
+import ServiceManagement
+import UserNotifications
 
 // MARK: - Main App Entry Point
 @main
@@ -37,6 +39,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         menubarController = MenubarController()
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if granted {
+                print("Notification permission granted.")
+            } else if let error = error {
+                print(error.localizedDescription)
+            }
+        }
     }
 }
 
@@ -45,10 +54,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 class MenubarController: NSObject, ObservableObject {
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
+    private let parser = RSSParser()
 
     private var modelContainer: ModelContainer
     private var modelContext: ModelContext
     @AppStorage("keepOpen") private var keepOpen: Bool = false
+    @AppStorage("RunOnStart") private var runOnStart: Bool = false
+    @AppStorage("pollingInterval") private var pollingInterval: TimeInterval = 300 // 5 minutes
+
+    private var timer: Timer?
+
 
     override init() {
         do {
@@ -70,6 +85,12 @@ class MenubarController: NSObject, ObservableObject {
 
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
+        
+        if runOnStart {
+           DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+               self.togglePopover(nil)
+           }
+        }
 
         self.popover = NSPopover()
         self.popover.behavior = .transient
@@ -77,6 +98,25 @@ class MenubarController: NSObject, ObservableObject {
         self.popover.contentViewController = NSHostingController(rootView: ContentView().environment(\.modelContext, modelContext))
 
         NSApp.setActivationPolicy(.accessory)
+        startTimer()
+    }
+
+    private func startTimer() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: pollingInterval, repeats: true) { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.refreshFeeds()
+            }
+        }
+    }
+
+    private func refreshFeeds() {
+        do {
+            let sources = try modelContext.fetch(FetchDescriptor<RSSFeedSource>())
+            parser.refreshAllFeeds(sources: sources, in: modelContext) {}
+        } catch {
+            print("Failed to fetch feed sources: \(error.localizedDescription)")
+        }
     }
 
     @objc private func handleButtonClick() {
@@ -97,6 +137,18 @@ class MenubarController: NSObject, ObservableObject {
         guard let button = self.statusItem.button else { return }
 
         let menu = NSMenu()
+        let runOnStartItem = NSMenuItem(title: "Run on Start", action: #selector(toggleRunOnStart), keyEquivalent: "")
+        runOnStartItem.target = self
+        runOnStartItem.state = runOnStart ? .on : .off
+        menu.addItem(runOnStartItem)
+
+        menu.addItem(NSMenuItem.separator())
+
+        let pollingMenuItem = NSMenuItem(title: "Refresh Interval", action: nil, keyEquivalent: "")
+        pollingMenuItem.submenu = createPollingIntervalMenu()
+        menu.addItem(pollingMenuItem)
+
+        menu.addItem(NSMenuItem.separator())
 
         let aboutItem = NSMenuItem(title: "About RSS Reader", action: #selector(showAboutPanel), keyEquivalent: "")
         aboutItem.target = self
@@ -106,6 +158,54 @@ class MenubarController: NSObject, ObservableObject {
         menu.addItem(quitItem)
 
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: button.bounds.height), in: button)
+    }
+
+    private func createPollingIntervalMenu() -> NSMenu {
+        let menu = NSMenu()
+        let intervals: [TimeInterval] = [300, 600, 900, 1800] // 5, 10, 15, 30 minutes
+
+        for interval in intervals {
+            let menuItem = NSMenuItem(title: "\(Int(interval / 60)) minutes", action: #selector(changePollingInterval(_:)), keyEquivalent: "")
+            menuItem.target = self
+            menuItem.representedObject = interval
+            if pollingInterval == interval {
+                menuItem.state = .on
+            }
+            menu.addItem(menuItem)
+        }
+
+        return menu
+    }
+    
+    @objc private func toggleRunOnStart() {
+        runOnStart.toggle()
+        
+        if #available(macOS 13.0, *) {
+            do {
+                if runOnStart {
+                    if SMAppService.mainApp.status == .notRegistered {
+                        try SMAppService.mainApp.register()
+                    }
+                } else {
+                    try SMAppService.mainApp.unregister()
+                }
+            } catch {
+                print("Failed to \(runOnStart ? "register" : "unregister") login item: \(error.localizedDescription)")
+            }
+        } else {
+            // Use the deprecated SMLoginItemSetEnabled function on older versions of macOS
+            let launcherAppId = "com.example.RSSReaderLauncher"
+            if !SMLoginItemSetEnabled(launcherAppId as CFString, runOnStart) {
+                print("Failed to \(runOnStart ? "register" : "unregister") login item.")
+            }
+        }
+    }
+
+    @objc private func changePollingInterval(_ sender: NSMenuItem) {
+        if let interval = sender.representedObject as? TimeInterval {
+            pollingInterval = interval
+            startTimer()
+        }
     }
 
     @objc private func toggleKeepOpen() {

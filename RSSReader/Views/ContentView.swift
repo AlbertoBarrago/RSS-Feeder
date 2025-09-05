@@ -35,6 +35,18 @@ struct ContentView: View {
         allFeedItems.filter { !$0.isRead }.count
     }
 
+    private var readCount: Int {
+        allFeedItems.filter { $0.isRead }.count
+    }
+
+    private var allCount: Int {
+        allFeedItems.count
+    }
+
+    private func unreadCount(for feedSource: RSSFeedSource) -> Int {
+        allFeedItems.filter { $0.feedSourceURL == feedSource.url && !$0.isRead }.count
+    }
+
     var body: some View {
         NavigationSplitView {
             sidebarView
@@ -199,14 +211,30 @@ struct ContentView: View {
                                     .font(.caption)
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
-                                    .background(selectedFilter == filter ? .white.opacity(0.3) : .blue)
-                                    .foregroundColor(selectedFilter == filter ? .white : .white)
+                                    .background(selectedFilter == filter ? Color.white.opacity(0.3) : Color.blue)
+                                    .foregroundColor(selectedFilter == filter ? .white : .primary)
+                                    .clipShape(Capsule())
+                            } else if case .read = filter, readCount > 0 {
+                                Text("\(readCount)")
+                                    .font(.caption)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(selectedFilter == filter ? Color.white.opacity(0.3) : Color.blue)
+                                    .foregroundColor(selectedFilter == filter ? .white : .primary)
+                                    .clipShape(Capsule())
+                            } else if case .all = filter, allCount > 0 {
+                                Text("\(allCount)")
+                                    .font(.caption)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(selectedFilter == filter ? Color.white.opacity(0.3) : Color.blue)
+                                    .foregroundColor(selectedFilter == filter ? .white : .primary)
                                     .clipShape(Capsule())
                             }
                         }
                         .padding(.horizontal, 6)
                         .padding(.vertical, 5)
-                        .background(selectedFilter == filter ? .blue : .clear)
+                        .background(selectedFilter == filter ? Color.blue : Color.clear)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -267,6 +295,17 @@ struct ContentView: View {
                             }
 
                             Spacer()
+
+                            let count = unreadCount(for: feed)
+                            if count > 0 {
+                                Text("\(count)")
+                                    .font(.caption)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(selectedFilter == .feed(feed) ? .white.opacity(0.3) : .blue)
+                                    .foregroundColor(selectedFilter == .feed(feed) ? .white : .white)
+                                    .clipShape(Capsule())
+                            }
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
