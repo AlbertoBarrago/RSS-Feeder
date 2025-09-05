@@ -4,7 +4,7 @@ import os.log
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        let mainAppIdentifier = "com.example.RSSReader"
+        let mainAppIdentifier = "com.albz.RSSReader"
         let runningApps = NSWorkspace.shared.runningApplications
         let isRunning = !runningApps.filter { $0.bundleIdentifier == mainAppIdentifier }.isEmpty
 
