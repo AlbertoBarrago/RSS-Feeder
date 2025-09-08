@@ -166,13 +166,22 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
         DispatchQueue.main.async {
             do {
                 let allLinks = self.parsedItems.map { $0.link }
-                let fetchDescriptor = FetchDescriptor<RSSFeedItem>(
+
+                // Fetch existing items to prevent duplicates
+                let existingItemsDescriptor = FetchDescriptor<RSSFeedItem>(
                     predicate: #Predicate { allLinks.contains($0.link) }
                 )
-                let existingItems = try self.modelContext.fetch(fetchDescriptor)
+                let existingItems = try self.modelContext.fetch(existingItemsDescriptor)
                 let existingLinks = Set(existingItems.map { $0.link })
 
-                let newItems = self.parsedItems.filter { !existingLinks.contains($0.link) }
+                // Fetch deleted articles that match the current batch to prevent re-adding them
+                let deletedItemsDescriptor = FetchDescriptor<DeletedArticle>(
+                    predicate: #Predicate { allLinks.contains($0.link) }
+                )
+                let deletedItems = try self.modelContext.fetch(deletedItemsDescriptor)
+                let deletedLinks = Set(deletedItems.map { $0.link })
+
+                let newItems = self.parsedItems.filter { !existingLinks.contains($0.link) && !deletedLinks.contains($0.link) }
 
                 for item in newItems {
                     self.modelContext.insert(item)

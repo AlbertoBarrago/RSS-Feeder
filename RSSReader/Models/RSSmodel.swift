@@ -94,3 +94,12 @@ enum FilterOption: Hashable {
          }
      }
 }
+
+@Model
+final class DeletedArticle {
+    @Attribute(.unique) var link: String
+
+    init(link: String) {
+        self.link = link
+    }
+}
