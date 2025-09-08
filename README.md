@@ -1,10 +1,9 @@
 # RSSReader
 
-[![GitHub last commit](https://img.shields.io/github/last-commit/albz/RSSReader)](https://github.com/albz/RSSReader/commits/main)
-[![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/albz/RSSReader)](https://github.com/albz/RSSReader/releases/latest)
-[![GitHub repo size](https://img.shields.io/github/repo-size/albz/RSSReader)](https://github.com/albz/RSSReader)
-[![GitHub stars](https://img.shields.io/github/stars/albz/RSSReader?style=social)](https://github.com/albz/RSSReader/stargazers)
-[![Reddit](https://img.shields.io/reddit/subreddit-subscribers/macOS?label=r%2FMacOS&logo=reddit&style=social)](https://www.reddit.com/r/MacOS/comments/1n98vr6/rssfeeder/)
+[![GitHub last commit](https://img.shields.io/github/last-commit/AlbertoBarrago/RSS-Reader)](https://github.com/AlbertoBarrago/RSS-Reader/commits/main)
+[![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/AlbertoBarrago/RSS-Reader)](https://github.com/AlbertoBarrago/RSS-Reader/releases/latest)
+[![GitHub repo size](https://img.shields.io/github/repo-size/AlbertoBarrago/RSS-Reader)](https://github.com/AlbertoBarrago/RSS-Reader)
+[![GitHub stars](https://img.shields.io/github/stars/AlbertoBarrago/RSS-Reader?style=social)](https://github.com/AlbertoBarrago/RSS-Reader/stargazers)
 
 A simple Menu Bar RSS reader application for macOS.
 
