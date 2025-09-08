@@ -1,5 +1,10 @@
 # RSSReader
 
+[![GitHub last commit](https://img.shields.io/github/last-commit/albz/RSSReader)](https://github.com/albz/RSSReader/commits/main)
+[![GitHub repo size](https://img.shields.io/github/repo-size/albz/RSSReader)](https://github.com/albz/RSSReader)
+[![GitHub stars](https://img.shields.io/github/stars/albz/RSSReader?style=social)](https://github.com/albz/RSSReader/stargazers)
+[![Reddit](https://img.shields.io/reddit/subreddit-subscribers/macOS?label=r%2FMacOS&logo=reddit&style=social)](https://www.reddit.com/r/MacOS/comments/1n98vr6/rssfeeder/)
+
 A simple Menu Bar RSS reader application for macOS.
 
 ![screen](screen.png)
