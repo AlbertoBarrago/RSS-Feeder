@@ -67,7 +67,7 @@ class MenubarController: NSObject, ObservableObject {
 
     override init() {
         do {
-            modelContainer = try ModelContainer(for: RSSFeedItem.self, RSSFeedSource.self)
+            modelContainer = try ModelContainer(for: RSSFeedItem.self, RSSFeedSource.self, DeletedArticle.self)
             modelContext = ModelContext(modelContainer)
         } catch {
             fatalError("Failed to create MenubarController ModelContainer: \(error)")
@@ -101,12 +101,12 @@ class MenubarController: NSObject, ObservableObject {
         startTimer()
     }
 
-    private func startTimer() {
-        deinit {
-             timer?.invalidate()
-             timer = nil
-            }
+    deinit {
+        timer?.invalidate()
+    }
 
+    private func startTimer() {
+        timer?.invalidate() // Invalidate the old timer before creating a new one
         timer = Timer.scheduledTimer(withTimeInterval: pollingInterval, repeats: true) { [weak self] _ in
             DispatchQueue.main.async {
                 self?.refreshFeeds()

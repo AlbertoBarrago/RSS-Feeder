@@ -184,6 +184,7 @@ struct ContentView: View {
                     }
                     .onDelete(perform: deleteItems)
                 }
+                .id(selectedFilter)
                 .listStyle(PlainListStyle())
                 .refreshable {
                     await refreshCurrentFilter()
@@ -448,9 +449,13 @@ struct ContentView: View {
     private func deleteFeed(_ feed: RSSFeedSource) {
         let feedURL = feed.url
         do {
-            try modelContext.delete(model: RSSFeedItem.self, where: #Predicate { item in
-                item.feedSourceURL == feedURL
-            })
+            let itemsToDelete = try modelContext.fetch(FetchDescriptor<RSSFeedItem>(predicate: #Predicate { $0.feedSourceURL == feedURL }))
+            for item in itemsToDelete {
+                let deletedArticle = DeletedArticle(link: item.link)
+                modelContext.insert(deletedArticle)
+                modelContext.delete(item)
+            }
+            
             modelContext.delete(feed)
             try modelContext.save()
         } catch {
@@ -517,7 +522,12 @@ struct ContentView: View {
 
     private func cleanReadItems() {
         do {
-            try modelContext.delete(model: RSSFeedItem.self, where: #Predicate { $0.isRead })
+            let readItems = try modelContext.fetch(FetchDescriptor<RSSFeedItem>(predicate: #Predicate { $0.isRead }))
+            for item in readItems {
+                let deletedArticle = DeletedArticle(link: item.link)
+                modelContext.insert(deletedArticle)
+                modelContext.delete(item)
+            }
             try modelContext.save()
         } catch {
             print("Error cleaning read items: \(error)")
@@ -532,6 +542,8 @@ struct ContentView: View {
         }
 
         for item in oldItems {
+            let deletedArticle = DeletedArticle(link: item.link)
+            modelContext.insert(deletedArticle)
             modelContext.delete(item)
         }
 
@@ -542,6 +554,8 @@ struct ContentView: View {
         withAnimation {
             for index in offsets {
                 let item = filteredFeedItems[index]
+                let deletedArticle = DeletedArticle(link: item.link)
+                modelContext.insert(deletedArticle)
                 modelContext.delete(item)
             }
             try? modelContext.save()
@@ -550,7 +564,12 @@ struct ContentView: View {
 
     private func clearAllFeedItems() {
         do {
-            try modelContext.delete(model: RSSFeedItem.self)
+            let allItems = try modelContext.fetch(FetchDescriptor<RSSFeedItem>())
+            for item in allItems {
+                let deletedArticle = DeletedArticle(link: item.link)
+                modelContext.insert(deletedArticle)
+                modelContext.delete(item)
+            }
             try modelContext.save()
         } catch {
             print("Error clearing all feed items: \(error)")
