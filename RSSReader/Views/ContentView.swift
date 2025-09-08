@@ -446,16 +446,41 @@ struct ContentView: View {
         parser.fetchFeed(from: newFeed, in: modelContext) {}
     }
 
-    private func deleteFeed(_ feed: RSSFeedSource) {
-        let feedURL = feed.url
+    private func archiveAndDelete(items: [RSSFeedItem]) {
+        guard !items.isEmpty else { return }
+
         do {
-            let itemsToDelete = try modelContext.fetch(FetchDescriptor<RSSFeedItem>(predicate: #Predicate { $0.feedSourceURL == feedURL }))
-            for item in itemsToDelete {
-                let deletedArticle = DeletedArticle(link: item.link)
-                modelContext.insert(deletedArticle)
+            let linksToArchive = Set(items.map { $0.link })
+
+            let existingDeletedDescriptor = FetchDescriptor<DeletedArticle>(
+                predicate: #Predicate { linksToArchive.contains($0.link) }
+            )
+            let existingDeletedLinks = try Set(modelContext.fetch(existingDeletedDescriptor).map { $0.link })
+
+            for link in linksToArchive where !existingDeletedLinks.contains(link) {
+                let newDeletedArticle = DeletedArticle(link: link)
+                modelContext.insert(newDeletedArticle)
+            }
+
+            for item in items {
                 modelContext.delete(item)
             }
-            
+
+            try modelContext.save()
+            #if DEBUG
+            print("Archived and deleted \(items.count) items.")
+            #endif
+        } catch {
+            print("Error during archive and delete: \(error)")
+        }
+    }
+    
+    private func deleteFeed(_ feed: RSSFeedSource) {
+        do {
+            let feedURL = feed.url
+            let itemsToDelete = try modelContext.fetch(FetchDescriptor<RSSFeedItem>(predicate: #Predicate { $0.feedSourceURL == feedURL }))
+            archiveAndDelete(items: itemsToDelete)
+
             modelContext.delete(feed)
             try modelContext.save()
         } catch {
@@ -522,15 +547,11 @@ struct ContentView: View {
 
     private func cleanReadItems() {
         do {
-            let readItems = try modelContext.fetch(FetchDescriptor<RSSFeedItem>(predicate: #Predicate { $0.isRead }))
-            for item in readItems {
-                let deletedArticle = DeletedArticle(link: item.link)
-                modelContext.insert(deletedArticle)
-                modelContext.delete(item)
-            }
-            try modelContext.save()
+            let itemsToClean = try modelContext.fetch(FetchDescriptor<RSSFeedItem>(predicate: #Predicate { $0.isRead }))
+            archiveAndDelete(items: itemsToClean)
+
         } catch {
-            print("Error cleaning read items: \(error)")
+            print("Error finding read items to clean: \(error)")
         }
     }
 
@@ -541,38 +562,23 @@ struct ContentView: View {
             return itemDate < thirtyDaysAgo
         }
 
-        for item in oldItems {
-            let deletedArticle = DeletedArticle(link: item.link)
-            modelContext.insert(deletedArticle)
-            modelContext.delete(item)
-        }
-
-        try? modelContext.save()
+        archiveAndDelete(items: oldItems)
     }
 
     private func deleteItems(offsets: IndexSet) {
         withAnimation {
-            for index in offsets {
-                let item = filteredFeedItems[index]
-                let deletedArticle = DeletedArticle(link: item.link)
-                modelContext.insert(deletedArticle)
-                modelContext.delete(item)
-            }
-            try? modelContext.save()
+            let itemsToDelete = offsets.map { filteredFeedItems[$0] }
+            archiveAndDelete(items: itemsToDelete)
         }
     }
 
     private func clearAllFeedItems() {
         do {
             let allItems = try modelContext.fetch(FetchDescriptor<RSSFeedItem>())
-            for item in allItems {
-                let deletedArticle = DeletedArticle(link: item.link)
-                modelContext.insert(deletedArticle)
-                modelContext.delete(item)
-            }
-            try modelContext.save()
+            archiveAndDelete(items: allItems)
+
         } catch {
-            print("Error clearing all feed items: \(error)")
+            print("Error fetching all items to clear: \(error)")
         }
     }
 }

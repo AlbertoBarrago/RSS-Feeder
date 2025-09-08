@@ -141,22 +141,25 @@ class MenubarController: NSObject, ObservableObject {
         guard let button = self.statusItem.button else { return }
 
         let menu = NSMenu()
+        
+        menu.addItem(NSMenuItem.sectionHeader(title: "Settings"))
+        
         let runOnStartItem = NSMenuItem(title: "Run on Start", action: #selector(toggleRunOnStart), keyEquivalent: "")
         runOnStartItem.target = self
         runOnStartItem.state = runOnStart ? .on : .off
         menu.addItem(runOnStartItem)
 
-        menu.addItem(NSMenuItem.separator())
-
         let pollingMenuItem = NSMenuItem(title: "Refresh Interval", action: nil, keyEquivalent: "")
         pollingMenuItem.submenu = createPollingIntervalMenu()
         menu.addItem(pollingMenuItem)
 
-        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem.sectionHeader(title: "About"))
 
         let aboutItem = NSMenuItem(title: "About RSS Reader", action: #selector(showAboutPanel), keyEquivalent: "")
         aboutItem.target = self
         menu.addItem(aboutItem)
+        
+        menu.addItem(NSMenuItem.separator())
 
         let quitItem = NSMenuItem(title: "Quit RSS Reader", action: #selector(NSApplication.shared.terminate(_:)), keyEquivalent: "q")
         menu.addItem(quitItem)

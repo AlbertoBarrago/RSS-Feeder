@@ -174,8 +174,11 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
                 let existingItems = try self.modelContext.fetch(existingItemsDescriptor)
                 let existingLinks = Set(existingItems.map { $0.link })
 
-                // Fetch deleted articles to prevent re-adding them
-                let deletedItemsDescriptor = FetchDescriptor<DeletedArticle>()
+                // Fetch deleted articles that match the current batch to prevent re-adding them
+                let deletedItemsDescriptor = FetchDescriptor<DeletedArticle>(
+                    predicate: #Predicate { allLinks.contains($0.link) }
+                )
+
                 let deletedItems = try self.modelContext.fetch(deletedItemsDescriptor)
                 let deletedLinks = Set(deletedItems.map { $0.link })
 
