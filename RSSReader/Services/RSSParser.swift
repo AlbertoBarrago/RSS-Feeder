@@ -178,6 +178,7 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
                 let deletedItemsDescriptor = FetchDescriptor<DeletedArticle>(
                     predicate: #Predicate { allLinks.contains($0.link) }
                 )
+
                 let deletedItems = try self.modelContext.fetch(deletedItemsDescriptor)
                 let deletedLinks = Set(deletedItems.map { $0.link })
 

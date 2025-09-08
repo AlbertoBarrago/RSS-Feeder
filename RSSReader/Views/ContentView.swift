@@ -549,6 +549,7 @@ struct ContentView: View {
         do {
             let itemsToClean = try modelContext.fetch(FetchDescriptor<RSSFeedItem>(predicate: #Predicate { $0.isRead }))
             archiveAndDelete(items: itemsToClean)
+
         } catch {
             print("Error finding read items to clean: \(error)")
         }
@@ -560,6 +561,7 @@ struct ContentView: View {
             guard let itemDate = $0.pubDate.toDate() else { return false }
             return itemDate < thirtyDaysAgo
         }
+
         archiveAndDelete(items: oldItems)
     }
 
@@ -574,6 +576,7 @@ struct ContentView: View {
         do {
             let allItems = try modelContext.fetch(FetchDescriptor<RSSFeedItem>())
             archiveAndDelete(items: allItems)
+
         } catch {
             print("Error fetching all items to clear: \(error)")
         }
