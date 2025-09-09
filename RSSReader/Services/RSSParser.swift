@@ -101,6 +101,7 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
     private var currentTitle = ""
     private var currentLink = ""
     private var currentPubDate = ""
+    private var currentContent = ""
     private var parsedItems: [RSSFeedItem] = []
     private var isInItem = false
 
@@ -117,6 +118,7 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
             currentTitle = ""
             currentLink = ""
             currentPubDate = ""
+            currentContent = ""
         }
     }
 
@@ -132,6 +134,8 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
                 currentLink += trimmedString
             case "pubdate", "published", "dc:date":
                 currentPubDate += trimmedString
+            case "content:encoded", "description":
+                currentContent += trimmedString
             default:
                 break
             }
@@ -153,7 +157,8 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
                 link: currentLink.trimmingCharacters(in: .whitespacesAndNewlines),
                 pubDate: cleanedDate.isEmpty ? Date().description : cleanedDate,
                 feedSourceName: currentFeedSource.name,
-                feedSourceURL: currentFeedSource.url
+                feedSourceURL: currentFeedSource.url,
+                content: currentContent.trimmingCharacters(in: .whitespacesAndNewlines)
             )
             parsedItems.append(newItem)
             isInItem = false
