@@ -95,7 +95,7 @@ class MenubarController: NSObject, ObservableObject {
         self.popover = NSPopover()
         self.popover.behavior = .transient
         self.popover.contentSize = NSSize(width: 800, height: 600)
-        self.popover.contentViewController = NSHostingController(rootView: ContentView().environment(\.modelContext, modelContext))
+        self.popover.contentViewController = NSHostingController(rootView: ContentView(modelContext: modelContext))
 
         NSApp.setActivationPolicy(.accessory)
         startTimer()
