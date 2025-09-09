@@ -54,7 +54,8 @@ struct EditFeedView: View {
                     saveFeed()
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(feedURL.isEmpty || feedName.isEmpty)
+                .disabled(feedURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+                          feedName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
         }
         .padding()
@@ -62,13 +63,15 @@ struct EditFeedView: View {
     }
 
     private func saveFeed() {
+        let trimmedURL = feedURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedName = feedName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard feedURL.isValidURL() else {
             errorMessage = "Please enter a valid URL"
             return
         }
-
-        feed.url = feedURL
-        feed.name = feedName
+        
+        feed.url = trimmedURL
+        feed.name = trimmedName
         onSave(feed)
         dismiss()
     }

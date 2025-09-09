@@ -164,6 +164,10 @@ struct SidebarView: View {
                         }
 
                         Button("Refresh", systemImage: "arrow.clockwise") {
+                            withAnimation {
+                                viewModel.selectedFilterIndex = -1
+                                viewModel.selectedFeedFilter = feed
+                            }
                             viewModel.refreshCurrentFilter()
                         }
 
@@ -213,7 +217,7 @@ struct SidebarView: View {
                 }
 
                 Button(action: {
-                    viewModel.refreshCurrentFilter()
+                    viewModel.refreshAllFeeds()
                 }) {
                     Image(systemName: "arrow.clockwise")
                         .font(.title3)

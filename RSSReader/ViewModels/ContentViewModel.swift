@@ -12,9 +12,7 @@ class ContentViewModel: ObservableObject {
     @Published var feedToEdit: RSSFeedSource? = nil
     @Published var searchText = ""
 
-    var isLoading: Bool {
-        parser.isLoading
-    }
+    @Published private(set) var isLoading = false
 
     private var modelContext: ModelContext
     private let parser = RSSParser()
@@ -118,11 +116,17 @@ class ContentViewModel: ObservableObject {
     }
 
     func addFeedSource(url: String, name: String) {
-        let newFeed = RSSFeedSource(name: name, url: url)
+        let trimmedURL = url.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !feedSources.contains(where: { $0.url == trimmedURL }) else { return }
+        let newFeed = RSSFeedSource(name: name.trimmingCharacters(in: .whitespacesAndNewlines), url: trimmedURL)
+        
         modelContext.insert(newFeed)
         try? modelContext.save()
         fetchData()
-        parser.fetchFeed(from: newFeed, in: modelContext) {}
+        isLoading = true
+        parser.fetchFeed(from: newFeed, in: modelContext) { [weak self] in
+            self?.isLoading = false
+        }
     }
 
     func updateFeedSource(_ feed: RSSFeedSource) {
@@ -174,8 +178,10 @@ class ContentViewModel: ObservableObject {
     func refreshCurrentFilter() {
         switch selectedFilter {
         case .feed(let feedSource):
+            isLoading = true
             parser.fetchFeed(from: feedSource, in: modelContext) {
                 self.fetchData()
+                self.isLoading = false
             }
         default:
             refreshAllFeeds()
@@ -183,8 +189,10 @@ class ContentViewModel: ObservableObject {
     }
 
     func refreshAllFeeds() {
+        isLoading = true
         parser.refreshAllFeeds(sources: feedSources, in: modelContext) {
             self.fetchData()
+            self.isLoading = false
         }
     }
 
