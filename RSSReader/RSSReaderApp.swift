@@ -201,7 +201,7 @@ class MenubarController: NSObject, ObservableObject {
             }
         } else {
             // Use the deprecated SMLoginItemSetEnabled function on older versions of macOS
-            let launcherAppId = "com.example.RSSReaderLauncher"
+            let launcherAppId = "com.albz.RSSReaderLauncher"
             if !SMLoginItemSetEnabled(launcherAppId as CFString, runOnStart) {
                 print("Failed to \(runOnStart ? "register" : "unregister") login item.")
             }
