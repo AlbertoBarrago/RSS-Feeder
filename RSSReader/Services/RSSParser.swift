@@ -101,7 +101,9 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
     private var currentTitle = ""
     private var currentLink = ""
     private var currentPubDate = ""
-    private var currentContent = ""
+    private var currentDescription = ""
+    private var currentPreviewImageURL: String?
+
     private var parsedItems: [RSSFeedItem] = []
     private var isInItem = false
 
@@ -118,35 +120,62 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
             currentTitle = ""
             currentLink = ""
             currentPubDate = ""
-            currentContent = ""
+            currentDescription = ""
+            currentPreviewImageURL = nil
         }
-    }
-
-    func parser(_ parser: XMLParser, foundCharacters string: String) {
-        let trimmedString = string.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmedString.isEmpty { return }
 
         if isInItem {
             switch currentElement {
-            case "title":
-                currentTitle += trimmedString
             case "link":
-                currentLink += trimmedString
-            case "pubdate", "published", "dc:date":
-                currentPubDate += trimmedString
-            case "content:encoded", "description":
-                currentContent += trimmedString
+                if let href = attributeDict["href"] {
+                    currentLink = href
+                }
+            case "enclosure", "media:content", "media:thumbnail":
+                if let url = attributeDict["url"] ?? attributeDict["href"] {
+                    if currentPreviewImageURL == nil { // Prioritize first image found
+                        currentPreviewImageURL = url
+                    }
+                }
             default:
                 break
             }
         }
     }
 
+    func parser(_ parser: XMLParser, foundCharacters string: String) {
+        let trimmedString = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedString.isEmpty || !isInItem { return }
+
+        switch currentElement {
+        case "title":
+            currentTitle += string // Use original string to preserve entities
+        case "link":
+            // If link is not in an attribute, it's content
+            if currentLink.isEmpty {
+                currentLink += trimmedString
+            }
+        case "pubdate", "published", "dc:date", "updated":
+            currentPubDate += trimmedString
+        case "description", "summary", "content:encoded", "content":
+            currentDescription += string // Use original string to preserve HTML
+        default:
+            break
+        }
+    }
+
     func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
-        if (elementName.lowercased() == "item" || elementName.lowercased() == "entry") && isInItem,
-            !currentTitle.isEmpty,
-            !currentLink.isEmpty
-        {
+        let lowercasedElementName = elementName.lowercased()
+
+        if (lowercasedElementName == "item" || lowercasedElementName == "entry") && isInItem {
+            guard !currentTitle.isEmpty, !currentLink.isEmpty else {
+                isInItem = false
+                return
+            }
+
+            // Fallback: search for an image in the description if not already found
+            if currentPreviewImageURL == nil {
+                currentPreviewImageURL = findImageInHTML(currentDescription)
+            }
 
             let cleanedDate = currentPubDate.replacingOccurrences(of: "+0000", with: "")
                 .replacingOccurrences(of: "GMT", with: "")
@@ -158,13 +187,26 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
                 pubDate: cleanedDate.isEmpty ? Date().description : cleanedDate,
                 feedSourceName: currentFeedSource.name,
                 feedSourceURL: currentFeedSource.url,
-                content: currentContent.trimmingCharacters(in: .whitespacesAndNewlines)
+                itemDescription: currentDescription.trimmingCharacters(in: .whitespacesAndNewlines),
+                previewImageURL: currentPreviewImageURL
             )
             parsedItems.append(newItem)
             isInItem = false
         }
 
         currentElement = ""
+    }
+    
+    private func findImageInHTML(_ html: String) -> String? {
+        let regex = try? NSRegularExpression(pattern: "<img[^>]+src\\s*=\\s*[\"']([^\"']+)[\"']", options: .caseInsensitive)
+        let range = NSRange(location: 0, length: html.utf16.count)
+        
+        if let match = regex?.firstMatch(in: html, options: [], range: range) {
+            if let urlRange = Range(match.range(at: 1), in: html) {
+                return String(html[urlRange])
+            }
+        }
+        return nil
     }
 
     func parserDidEndDocument(_ parser: XMLParser) {

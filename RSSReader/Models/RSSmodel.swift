@@ -17,16 +17,18 @@ final class RSSFeedItem: Identifiable, Hashable {
     var feedSourceName: String
     var feedSourceURL: String
     var isRead: Bool = false
-    @Attribute(.externalStorage) var content: String?
+    @Attribute(.externalStorage) var itemDescription: String?
+    var previewImageURL: String?
 
-    init(title: String, link: String, pubDate: String, feedSourceName: String, feedSourceURL: String, content: String? = nil) {
+    init(title: String, link: String, pubDate: String, feedSourceName: String, feedSourceURL: String, itemDescription: String? = nil, previewImageURL: String? = nil) {
         self.title = title
         self.link = link
         self.pubDate = pubDate
         self.feedSourceName = feedSourceName
         self.feedSourceURL = feedSourceURL
         self.isRead = false
-        self.content = content
+        self.itemDescription = itemDescription
+        self.previewImageURL = previewImageURL
     }
 }
 
