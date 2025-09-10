@@ -247,6 +247,9 @@ class MenubarController: NSObject, ObservableObject {
                 .credits: credits,
             ]
         )
+        
+        NSApp.activate(ignoringOtherApps: true)
+        
     }
 
     @objc func togglePopover(_ sender: AnyObject?) {
