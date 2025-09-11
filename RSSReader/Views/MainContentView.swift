@@ -12,6 +12,14 @@ struct MainContentView: View {
             Divider()
             articlesList
         }
+        .onAppear {
+           viewModel.refreshCurrentFilter()
+        }
+        .onChange(of: viewModel.showingAddFeed) {
+            if viewModel.showingAddFeed {
+                viewModel.refreshCurrentFilter()
+            }
+        }
     }
 
     private var contentHeader: some View {
@@ -30,7 +38,7 @@ struct MainContentView: View {
 
             Spacer()
             
-            if style == .simple { // Only show this button in the popover
+            if style == .simple { 
                 Button(action: { openWindow(id: "desktopView") }) {
                     Image(systemName: "macwindow")
                 }
@@ -127,7 +135,7 @@ struct MainContentView: View {
                     })
             }
             .onDelete(perform: viewModel.deleteItems)
-        }
+            }
         .id(viewModel.selectedFilter)
         .listStyle(.inset)
         .refreshable {
