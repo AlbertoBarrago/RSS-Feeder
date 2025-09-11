@@ -37,7 +37,7 @@ struct RSSReaderApp: App {
 
     var body: some Scene {
        
-        Window("Desktop View", id: "desktopView") {
+        Window("RSS Reader", id: "desktopView") {
                     ContentView(modelContext: modelContext, style: .rich)
                 }
                 .defaultPosition(.center)
