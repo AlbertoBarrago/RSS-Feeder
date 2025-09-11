@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MainContentView: View {
+    @Environment(\.openWindow) private var openWindow
     @ObservedObject var viewModel: ContentViewModel
     var style: ArticleListStyle = .simple
 
@@ -30,7 +31,7 @@ struct MainContentView: View {
             Spacer()
             
             if style == .simple { // Only show this button in the popover
-                Button(action: openNewWindow) {
+                Button(action: { openWindow(id: "desktopView") }) {
                     Image(systemName: "macwindow")
                 }
                 .help("Open in New Window")
@@ -51,46 +52,25 @@ struct MainContentView: View {
         .background(Color(.controlBackgroundColor).opacity(0.5))
     }
 
-    private func openNewWindow() {
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 1200, height: 800),
-            styleMask: [.titled, .closable, .resizable, .miniaturizable],
-            backing: .buffered,
-            defer: false
-        )
-        window.center()
-        window.setFrameAutosaveName("Main App Window")
-        window.contentView = NSHostingView(
-            rootView: ContentView(modelContext: viewModel.modelContext, style: .rich)
-        )
-        window.makeKeyAndOrderFront(nil)
-        
-        // We also need to make sure the app becomes a standard windowed app
-        // when the user does this.
-        DispatchQueue.main.async {
-            NSApp.setActivationPolicy(.regular)
-            NSApp.activate(ignoringOtherApps: true)
-        }
-    }
-
     private var searchBar: some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
-            TextField("Search by title", text: $viewModel.searchText)
-            if !viewModel.searchText.isEmpty {
-                Button(action: {
-                    viewModel.searchText = ""
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
-                }
-                .buttonStyle(PlainButtonStyle())
-            }
-        }
-        .padding()
-        .background(Color(.controlBackgroundColor).opacity(0.5))
-    }
+           HStack {
+               Image(systemName: "magnifyingglass")
+                   .foregroundColor(.secondary)
+               TextField("Search by title", text: $viewModel.searchText)
+                   .textFieldStyle(PlainTextFieldStyle())
+               if !viewModel.searchText.isEmpty {
+                   Button(action: {
+                       viewModel.searchText = ""
+                   }) {
+                       Image(systemName: "xmark.circle.fill")
+                           .foregroundColor(.secondary)
+                   }
+                   .buttonStyle(PlainButtonStyle())
+               }
+           }
+           .padding()
+           .background(Color(.controlBackgroundColor).opacity(0.5))
+       }
 
     @ViewBuilder
     private var articlesList: some View {
