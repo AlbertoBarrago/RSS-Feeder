@@ -14,7 +14,7 @@ class ContentViewModel: ObservableObject {
 
     @Published private(set) var isLoading = false
 
-    private var modelContext: ModelContext
+    var modelContext: ModelContext
     private let parser = RSSParser()
 
     init(modelContext: ModelContext) {

@@ -127,14 +127,31 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
         if isInItem {
             switch currentElement {
             case "link":
-                if let href = attributeDict["href"] {
-                    currentLink = href
-                }
-            case "enclosure", "media:content", "media:thumbnail":
-                if let url = attributeDict["url"] ?? attributeDict["href"] {
-                    if currentPreviewImageURL == nil { // Prioritize first image found
-                        currentPreviewImageURL = url
+                // For Atom, the article link usually has rel="alternate" or no rel attribute.
+                // We want to avoid grabbing links for enclosures or other resources.
+                let rel = attributeDict["rel"]
+                if rel == "alternate" || rel == nil {
+                    if let href = attributeDict["href"] {
+                        currentLink = href
                     }
+                }
+            case "enclosure":
+                // Only grab enclosures that are images.
+                if let type = attributeDict["type"], type.hasPrefix("image"), let url = attributeDict["url"] {
+                    if currentPreviewImageURL == nil { currentPreviewImageURL = url }
+                }
+            case "media:content":
+                // Check if the medium is an image.
+                if let medium = attributeDict["medium"], medium == "image", let url = attributeDict["url"] {
+                    if currentPreviewImageURL == nil { currentPreviewImageURL = url }
+                }
+            case "media:thumbnail":
+                if let url = attributeDict["url"] {
+                    if currentPreviewImageURL == nil { currentPreviewImageURL = url }
+                }
+            case "itunes:image":
+                if let href = attributeDict["href"] {
+                    if currentPreviewImageURL == nil { currentPreviewImageURL = href }
                 }
             default:
                 break
@@ -158,6 +175,13 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
             currentPubDate += trimmedString
         case "description", "summary", "content:encoded", "content":
             currentDescription += string // Use original string to preserve HTML
+        case "image", "og:image", "media:thumbnail", "media:content":
+            if currentPreviewImageURL == nil {
+                let potentialURL = trimmedString.trimmingCharacters(in: .whitespaces)
+                if potentialURL.starts(with: "http") && URL(string: potentialURL) != nil {
+                    currentPreviewImageURL = potentialURL
+                }
+            }
         default:
             break
         }
@@ -190,6 +214,7 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
                 itemDescription: currentDescription.trimmingCharacters(in: .whitespacesAndNewlines),
                 previewImageURL: currentPreviewImageURL
             )
+            
             parsedItems.append(newItem)
             isInItem = false
         }

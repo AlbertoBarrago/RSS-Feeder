@@ -9,18 +9,19 @@ import SwiftData
 import SwiftUI
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel: ContentViewModel
+    var style: ArticleListStyle
 
-    init(modelContext: ModelContext) {
+    init(modelContext: ModelContext, style: ArticleListStyle = .simple) {
         _viewModel = StateObject(wrappedValue: ContentViewModel(modelContext: modelContext))
+        self.style = style
     }
 
     var body: some View {
         NavigationSplitView {
             SidebarView(viewModel: viewModel)
         } detail: {
-            MainContentView(viewModel: viewModel)
+            MainContentView(viewModel: viewModel, style: style)
         }
         .frame(minWidth: 300, minHeight: 200)
         .sheet(isPresented: $viewModel.showingAddFeed) {

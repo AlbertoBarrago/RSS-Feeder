@@ -15,30 +15,61 @@ import UserNotifications
 @main
 struct RSSReaderApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-
     let modelContainer: ModelContainer
+    let modelContext: ModelContext
+    
+    @StateObject private var viewModel: ContentViewModel
 
     init() {
-        do {
-            modelContainer = try ModelContainer(for: RSSFeedItem.self, RSSFeedSource.self)
-        } catch {
-            fatalError("Failed to create ModelContainer: \(error)")
-        }
-    }
+           do {
+               let container = try ModelContainer(for: RSSFeedItem.self,
+                                                  RSSFeedSource.self,
+                                                  DeletedArticle.self)
+               let context = ModelContext(container)
+
+               self.modelContainer = container
+               self.modelContext = context
+               _viewModel = StateObject(wrappedValue: ContentViewModel(modelContext: context))
+           } catch {
+               fatalError("Failed to create ModelContainer: \(error)")
+           }
+       }
 
     var body: some Scene {
-        Settings {
-            EmptyView()
-        }
+       
+        Window("Desktop View", id: "desktopView") {
+                    ContentView(modelContext: modelContext, style: .rich)
+                }
+                .defaultPosition(.center)
+                .defaultSize(width: 1200, height: 800)
+    }
+}
+
+struct AppLauncher: View {
+    @Environment(\.openWindow) private var openWindow
+    @ObservedObject var viewModel: ContentViewModel
+    let modelContext: ModelContext
+    
+    var body: some View {
+        MainContentView(viewModel: viewModel)
+            .onAppear {
+                // Apri la finestra desktop all'avvio
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    NSApp.setActivationPolicy(.regular)
+                    openWindow(id: "desktopView")
+                    NSApp.activate(ignoringOtherApps: true)
+                }
+            }
     }
 }
 
 // MARK: - AppDelegate for Menubar Integration
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     var menubarController: MenubarController!
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         menubarController = MenubarController()
+        
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if granted {
                 print("Notification permission granted.")
@@ -46,25 +77,41 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 print(error.localizedDescription)
             }
         }
+
+        NSApp.setActivationPolicy(.regular)
+    }
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        return false
+    }
+
+    
+    func windowShouldClose(_ sender: NSWindow) -> Bool {
+        if sender.identifier?.rawValue == "desktopView" {
+            sender.orderOut(nil)
+            return false
+        }
+        return true
     }
 }
+
 
 /// MARK: - Menubar Controller
 @MainActor
 class MenubarController: NSObject, ObservableObject {
+    static let shared = MenubarController()
+    
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
     private let parser = RSSParser()
-
+    
     private var modelContainer: ModelContainer
     private var modelContext: ModelContext
     @AppStorage("keepOpen") private var keepOpen: Bool = false
-    @AppStorage("RunOnStart") private var runOnStart: Bool = false
-    @AppStorage("pollingInterval") private var pollingInterval: TimeInterval = 300 // 5 minutes
-
+    @AppStorage("pollingInterval") private var pollingInterval: TimeInterval = 300
+    
     private var timer: Timer?
-
-
+    
     override init() {
         do {
             modelContainer = try ModelContainer(for: RSSFeedItem.self, RSSFeedSource.self, DeletedArticle.self)
@@ -72,41 +119,42 @@ class MenubarController: NSObject, ObservableObject {
         } catch {
             fatalError("Failed to create MenubarController ModelContainer: \(error)")
         }
-
+        
         super.init()
-
+        
+        setupMenubar()
+        startTimer()
+    }
+    
+    private func setupMenubar() {
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-
+        
         if let button = self.statusItem.button {
             button.image = NSImage(systemSymbolName: "antenna.radiowaves.left.and.right", accessibilityDescription: "RSS Reader")
-
+            button.image?.isTemplate = true
             button.action = #selector(handleButtonClick)
             button.target = self
-
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
         
-        if runOnStart {
-           DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-               self.togglePopover(nil)
-           }
-        }
-
         self.popover = NSPopover()
         self.popover.behavior = .transient
         self.popover.contentSize = NSSize(width: 800, height: 600)
         self.popover.contentViewController = NSHostingController(rootView: ContentView(modelContext: modelContext))
+    
 
         NSApp.setActivationPolicy(.accessory)
         startTimer()
     }
+    
+
 
     deinit {
         timer?.invalidate()
     }
 
     private func startTimer() {
-        timer?.invalidate() // Invalidate the old timer before creating a new one
+        timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: pollingInterval, repeats: true) { [weak self] _ in
             DispatchQueue.main.async {
                 self?.refreshFeeds()
@@ -144,10 +192,6 @@ class MenubarController: NSObject, ObservableObject {
         
         menu.addItem(NSMenuItem.sectionHeader(title: "Settings"))
         
-        let runOnStartItem = NSMenuItem(title: "Run on Start", action: #selector(toggleRunOnStart), keyEquivalent: "")
-        runOnStartItem.target = self
-        runOnStartItem.state = runOnStart ? .on : .off
-        menu.addItem(runOnStartItem)
 
         let pollingMenuItem = NSMenuItem(title: "Refresh Interval", action: nil, keyEquivalent: "")
         pollingMenuItem.submenu = createPollingIntervalMenu()
@@ -184,29 +228,6 @@ class MenubarController: NSObject, ObservableObject {
         return menu
     }
     
-    @objc private func toggleRunOnStart() {
-        runOnStart.toggle()
-        
-        if #available(macOS 13.0, *) {
-            do {
-                if runOnStart {
-                    if SMAppService.mainApp.status == .notRegistered {
-                        try SMAppService.mainApp.register()
-                    }
-                } else {
-                    try SMAppService.mainApp.unregister()
-                }
-            } catch {
-                print("Failed to \(runOnStart ? "register" : "unregister") login item: \(error.localizedDescription)")
-            }
-        } else {
-            // Use the deprecated SMLoginItemSetEnabled function on older versions of macOS
-            let launcherAppId = "com.albz.RSSReaderLauncher"
-            if !SMLoginItemSetEnabled(launcherAppId as CFString, runOnStart) {
-                print("Failed to \(runOnStart ? "register" : "unregister") login item.")
-            }
-        }
-    }
 
     @objc private func changePollingInterval(_ sender: NSMenuItem) {
         if let interval = sender.representedObject as? TimeInterval {
@@ -247,6 +268,9 @@ class MenubarController: NSObject, ObservableObject {
                 .credits: credits,
             ]
         )
+        
+        NSApp.activate(ignoringOtherApps: true)
+        
     }
 
     @objc func togglePopover(_ sender: AnyObject?) {
