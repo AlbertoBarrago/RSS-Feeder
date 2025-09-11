@@ -3,6 +3,7 @@ import SwiftUI
 struct MainContentView: View {
     @Environment(\.openWindow) private var openWindow
     @ObservedObject var viewModel: ContentViewModel
+    @AppStorage("showInMenuBar") private var showInMenuBar = true
     var style: ArticleListStyle = .simple
 
     var body: some View {
@@ -38,7 +39,7 @@ struct MainContentView: View {
 
             Spacer()
             
-            if style == .simple { 
+            if style == .simple && showInMenuBar {
                 Button(action: { openWindow(id: "desktopView") }) {
                     Image(systemName: "macwindow")
                 }
