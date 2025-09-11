@@ -5,7 +5,7 @@
 [![GitHub repo size](https://img.shields.io/github/repo-size/AlbertoBarrago/RSS-Reader)](https://github.com/AlbertoBarrago/RSS-Reader)
 [![GitHub stars](https://img.shields.io/github/stars/AlbertoBarrago/RSS-Reader?style=social)](https://github.com/AlbertoBarrago/RSS-Reader/stargazers)
 
-A simple Menu Bar RSS reader application for macOS.
+A simple macOS RSS Reader application made in swift.
 
 ![screen](screen.png)
 
