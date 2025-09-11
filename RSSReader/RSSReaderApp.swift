@@ -109,6 +109,7 @@ class MenubarController: NSObject, ObservableObject {
     private var modelContext: ModelContext
     @AppStorage("keepOpen") private var keepOpen: Bool = false
     @AppStorage("pollingInterval") private var pollingInterval: TimeInterval = 300
+    @AppStorage("showInMenuBar") private var showInMenuBar = true
     
     private var timer: Timer?
     
@@ -196,6 +197,11 @@ class MenubarController: NSObject, ObservableObject {
         let pollingMenuItem = NSMenuItem(title: "Refresh Interval", action: nil, keyEquivalent: "")
         pollingMenuItem.submenu = createPollingIntervalMenu()
         menu.addItem(pollingMenuItem)
+        
+        let iconTitle = showInMenuBar ? "Hide Desktop Version" : "Show Desktop Version"
+          let iconItem = NSMenuItem(title: iconTitle, action: #selector(toggleAppIcon), keyEquivalent: "")
+          iconItem.target = self
+          menu.addItem(iconItem)
 
         menu.addItem(NSMenuItem.sectionHeader(title: "About"))
 
@@ -226,6 +232,11 @@ class MenubarController: NSObject, ObservableObject {
         }
 
         return menu
+    }
+    
+    @objc private func toggleAppIcon() {
+        showInMenuBar.toggle()
+        NSApp.setActivationPolicy(showInMenuBar ? .regular : .accessory)
     }
     
 
