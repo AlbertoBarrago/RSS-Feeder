@@ -17,7 +17,7 @@ struct MainContentView: View {
     private var contentHeader: some View {
         HStack {
             VStack(alignment: .leading, spacing: 0) {
-                Text(style == .rich ? "Desktop View" : viewModel.selectedFilter.rawValue)
+                Text(viewModel.selectedFilter.rawValue)
                     .font(.title2)
                     .fontWeight(.semibold)
 
