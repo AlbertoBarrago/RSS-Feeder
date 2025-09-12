@@ -38,7 +38,18 @@ jobs:
           --app-drop-link 600 185 \
           "RSSReader.dmg" \
           "build/Build/Products/Release/RSSReader.app"
-    
+
+    - name: Create Releasei
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: RSSReader.dmg
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
     - name: Upload DMG as artifact
       uses: actions/upload-artifact@v4
       with:

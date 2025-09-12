@@ -1,0 +1,201 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+header {
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+}
+
+nav {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav h1 {
+    color: #007AFF;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+}
+
+nav a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+}
+
+nav a:hover {
+    color: #007AFF;
+}
+
+main {
+    margin-top: 80px;
+}
+
+.hero {
+    display: flex;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 4rem 1rem;
+    gap: 3rem;
+}
+
+.hero-content {
+    flex: 1;
+}
+
+.hero h2 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #1d1d1f;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    color: #666;
+}
+
+.cta-button {
+    background: #007AFF;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-block;
+    transition: background 0.3s;
+}
+
+.cta-button:hover {
+    background: #0056CC;
+}
+
+.hero-image {
+    flex: 1;
+}
+
+.hero-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.features {
+    background: #f5f5f7;
+    padding: 4rem 1rem;
+}
+
+.features h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.feature {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.feature h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.download {
+    text-align: center;
+    padding: 4rem 1rem;
+}
+
+.download h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.download-button {
+    background: #34C759;
+    color: white;
+    padding: 1.5rem 3rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.2rem;
+    display: inline-block;
+    margin: 2rem 0;
+    transition: background 0.3s;
+}
+
+.download-button:hover {
+    background: #28A745;
+}
+
+.disclaimer {
+    color: #666;
+    font-style: italic;
+}
+
+.support {
+    background: #f5f5f7;
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+footer {
+    background: #1d1d1f;
+    color: white;
+    text-align: center;
+    padding: 2rem;
+}
+
+footer a {
+    color: #007AFF;
+}
+
+@media (max-width: 768px) {
+    .hero {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .hero h2 {
+        font-size: 2rem;
+    }
+    
+    nav {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
