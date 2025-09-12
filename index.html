@@ -48,16 +48,26 @@
             </div>
         </section>
 
-         <section id="download" class="download">
-            <h2>Download RSS Reader</h2>
-            <p>Compatible with macOS 11.0 and later</p>
-            <a href="https://github.com/AlbertoBarrago/RSS-Reader/releases/latest/download/RSSReader.dmg" 
-               class="download-button">Download for macOS</a>
-            <p class="disclaimer">100% Free • No Ads • Open Source</p>
-            <p class="github-link">
-                <a href="https://github.com/AlbertoBarrago/RSS-Reader">View on GitHub</a>
-            </p>
-        </section>
+        <section id="download" class="download">
+             <h2>Download RSS Reader</h2>
+             <p>Compatible with macOS 11.0 and later</p>
+             <a href="https://github.com/AlbertoBarrago/RSS-Reader/releases/latest/download/RSSReader.dmg" 
+             class="download-button">Download for macOS</a>
+    
+          <div class="installation-instructions">
+               <h3>🔒 Security Notice</h3>
+               <p>Since this app isn't signed with an Apple Developer certificate, you may see a security warning. Here's how to install:</p>
+            <ol>
+                <li>Download and open the DMG file</li>
+            	<li>Drag RSS Reader to Applications folder</li>
+                <li>If you see "damaged" error, open <strong>Terminal</strong> and run:</li>
+            	<code>sudo xattr -rd com.apple.quarantine /Applications/RSSReader.app</code>
+        	    <li>Or right-click the app → "Open" → "Open" to bypass Gatekeeper</li>
+        	</ol>
+          </div>
+    
+    	   <p class="disclaimer">100% Free • No Ads • Open Source</p>
+	</section>
 
         <section id="support" class="support">
             <h2>Support</h2>
