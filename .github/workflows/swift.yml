@@ -19,7 +19,7 @@ jobs:
     
     - name: Build Xcode project
       run: |
-        xcodebuild -project RSSReader.xcodeproj -scheme RSS-Reader -configuration Release -derivedDataPath build
+        xcodebuild -project RSSReader.xcodeproj -scheme com.albz.RSSReader -configuration Release -derivedDataPath build
     
     - name: Verify app was built
       run: |
