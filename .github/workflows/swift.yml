@@ -14,9 +14,15 @@ jobs:
     - name: Install create-dmg
       run: brew install create-dmg
     
-    - name: Build Xcode project
+    - name: Build Xcode project (unsigned)
       run: |
-        xcodebuild -project RSSReader.xcodeproj -scheme "RSSReader" -configuration Release -derivedDataPath build
+        xcodebuild -project RSSReader.xcodeproj \
+          -scheme "RSSReader" \
+          -configuration Release \
+          -derivedDataPath build \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
     
     - name: Verify app was built
       run: |
