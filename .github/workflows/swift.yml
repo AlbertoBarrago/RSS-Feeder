@@ -1,16 +1,12 @@
 name: Build (.dmg)
-
 on:
-  pull_request:
-    branches: [ main ]
   push:
+    branches: [ main ]
     tags: [ 'v*.*.*' ]
   workflow_dispatch: 
-
 permissions:
    contents: write
    actions: read
-
 jobs:
   build:
     runs-on: macos-latest
@@ -34,7 +30,9 @@ jobs:
     - name: Verify and prepare app
       run: |
         ls -la "build/Build/Products/Release/"
+        # Remove quarantine attributes
         sudo xattr -cr "build/Build/Products/Release/RSSReader.app"
+        # Make executable
         chmod +x "build/Build/Products/Release/RSSReader.app/Contents/MacOS/"*
     
     - name: Create DMG
@@ -49,9 +47,9 @@ jobs:
           "RSSReader.dmg" \
           "build/Build/Products/Release/RSSReader.app"
         
+        # Remove quarantine from DMG
         sudo xattr -cr "RSSReader.dmg"
     
-    # Only create releases on tags, not on PRs or regular merges
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
@@ -60,6 +58,12 @@ jobs:
         draft: false
         prerelease: false
         generate_release_notes: true
+        body: |
+          ## Installation Instructions
+          
+          Since this app isn't App Store signed, you may need to:
+          1. Right-click the app and select "Open" 
+          2. Or run: `sudo xattr -rd com.apple.quarantine /Applications/RSSReader.app`
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
