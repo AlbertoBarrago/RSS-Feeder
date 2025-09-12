@@ -39,7 +39,7 @@ jobs:
           "RSSReader.dmg" \
           "build/Build/Products/Release/RSSReader.app"
 
-    - name: Create Releasei
+    - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
